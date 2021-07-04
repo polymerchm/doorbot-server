@@ -1,0 +1,21 @@
+# Minimum viable product
+* Sanity test setup
+* SQLAlchemy table defintion
+* Dockerize
+* Jenkins deployment
+* Check tag API
+* HTML frontend
+* Entry by location API
+* New tag API
+* Alter tag API (not based on existing API)
+* Deactivate tag API
+* Reactivate tag API
+* Search tags API
+** By name
+** By RFID
+** Offset/limit
+* Entry log API
+* Dump activate tags API (JSON)
+
+# Later
+* Open a door API
