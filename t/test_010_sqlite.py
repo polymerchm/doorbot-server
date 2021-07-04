@@ -28,6 +28,13 @@ class TestDB( unittest.TestCase ):
             "1234",
             "Fetched member by name",
         )
+
+        member = DB.fetch_member_by_name( "Foo" )
+        self.assertEqual(
+            member[ 'rfid' ],
+            "1234",
+            "Fetched member by name prefix",
+        )
         
         member = DB.fetch_member_by_rfid( "1234" )
         self.assertEqual(

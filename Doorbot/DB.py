@@ -12,7 +12,7 @@ INSERT_MEMBER = '''
 FETCH_MEMBER_BY_NAME = '''
     SELECT full_name, rfid
     FROM members
-    WHERE full_name = ?
+    WHERE full_name LIKE ?
 '''
 FETCH_MEMBER_BY_RFID = '''
     SELECT full_name, rfid
@@ -72,6 +72,8 @@ def add_member(
 def fetch_member_by_name(
     name: str,
 ):
+    name = name + '%'
+
     sql = conn()
     cur = sql.cursor()
     cur.execute( FETCH_MEMBER_BY_NAME, [ name ] )
