@@ -1,18 +1,18 @@
 # Minimum viable product
-* Jenkins deployment
-* Check tag API
+* API
+** Entry by location API
+** New tag API
+** Deactivate tag API
+** Reactivate tag API
+** Search tags API
+*** By name
+*** By RFID
+*** Offset/limit
+** Entry log API
+** Dump activate tags API (JSON)
+** Alter tag API (not based on existing API)
 * HTML frontend
-* Entry by location API
-* New tag API
-* Alter tag API (not based on existing API)
-* Deactivate tag API
-* Reactivate tag API
-* Search tags API
-** By name
-** By RFID
-** Offset/limit
-* Entry log API
-* Dump activate tags API (JSON)
+* Jenkins deployment
 
 # Later
 * Open a door API
