@@ -33,6 +33,19 @@ LOG_ENTRY = '''
         ,?
     )
 '''
+FETCH_ENTRIES = '''
+    SELECT
+        entry_log.rfid
+        ,locations.name
+        ,entry_log.is_active_tag
+        ,entry_log.is_found_tag
+    FROM entry_log
+    JOIN locations ON entry_log.location_id = locations.id
+    ORDER BY entry_time DESC
+    LIMIT ?
+    OFFSET ?
+'''
+
 
 
 def set_db( conn ):
@@ -104,3 +117,27 @@ def log_entry(
     cur.close()
     return
 
+def _map_entry( entry ):
+    result = {
+        'rfid': entry[0],
+        'name': entry[1],
+        'is_active_tag': True if entry[2] else False,
+        'is_found_tag': True if entry[3] else False,
+    }
+    return result
+
+def fetch_entries(
+    limit: int = 100,
+    offset: int = 0,
+):
+    sql = conn()
+    cur = sql.cursor()
+    cur.execute( FETCH_ENTRIES, [ limit, offset ] )
+    rows = cur.fetchall()
+    cur.close()
+
+    results = map(
+        _map_entry,
+        rows,
+    )
+    return list( results )

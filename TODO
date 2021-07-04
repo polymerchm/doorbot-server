@@ -1,8 +1,8 @@
 # Minimum viable product
 * DB
-** Search entry log (offset/limit)
 ** Deactivate member
 ** Reactivate member
+** Search member by name prefix
 * Jenkins deployment
 * Check tag API
 * HTML frontend
