@@ -1,6 +1,5 @@
 # Minimum viable product
 * SQLAlchemy table defintion
-* Dockerize
 * Jenkins deployment
 * Check tag API
 * HTML frontend
