@@ -28,6 +28,10 @@ class TestDB( unittest.TestCase ):
             "1234",
             "Fetched member by name",
         )
+        self.assertTrue(
+            member[ 'is_active' ],
+            "Member is active",
+        )
 
         member = DB.fetch_member_by_name( "Foo" )
         self.assertEqual(
@@ -55,6 +59,20 @@ class TestDB( unittest.TestCase ):
             member,
             None,
             "No member found for rfid",
+        )
+
+        DB.deactivate_member( "1234" )
+        member = DB.fetch_member_by_rfid( "1234" )
+        self.assertFalse(
+            member[ 'is_active' ],
+            "Member no longer active",
+        )
+
+        DB.activate_member( "1234" )
+        member = DB.fetch_member_by_rfid( "1234" )
+        self.assertTrue(
+            member[ 'is_active' ],
+            "Member is active again",
         )
 
     def test_entry_log( self ):

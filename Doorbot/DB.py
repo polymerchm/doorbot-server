@@ -10,12 +10,12 @@ INSERT_MEMBER = '''
         (?, ?, '', '')
 '''
 FETCH_MEMBER_BY_NAME = '''
-    SELECT full_name, rfid
+    SELECT full_name, rfid, active
     FROM members
     WHERE full_name LIKE ?
 '''
 FETCH_MEMBER_BY_RFID = '''
-    SELECT full_name, rfid
+    SELECT full_name, rfid, active
     FROM members
     WHERE rfid = ?
 '''
@@ -44,6 +44,12 @@ FETCH_ENTRIES = '''
     ORDER BY entry_time DESC
     LIMIT ?
     OFFSET ?
+'''
+
+SET_MEMBER_ACTIVE_STATUS = '''
+    UPDATE members
+    SET active = ?
+    WHERE rfid = ?
 '''
 
 
@@ -86,6 +92,7 @@ def fetch_member_by_name(
         member = {
             'full_name': row[0],
             'rfid': row[1],
+            'is_active': True if row[2] else False,
         }
         return member
 
@@ -104,6 +111,7 @@ def fetch_member_by_rfid(
         member = {
             'full_name': row[0],
             'rfid': row[1],
+            'is_active': True if row[2] else False,
         }
         return member
 
@@ -143,3 +151,21 @@ def fetch_entries(
         rows,
     )
     return list( results )
+
+def deactivate_member(
+    rfid: str
+):
+    sql = conn()
+    cur = sql.cursor()
+    cur.execute( SET_MEMBER_ACTIVE_STATUS, ( False, rfid ) )
+    cur.close()
+    return
+
+def activate_member(
+    rfid: str
+):
+    sql = conn()
+    cur = sql.cursor()
+    cur.execute( SET_MEMBER_ACTIVE_STATUS, ( True, rfid ) )
+    cur.close()
+    return

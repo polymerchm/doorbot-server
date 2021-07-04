@@ -1,7 +1,4 @@
 # Minimum viable product
-* DB
-** Deactivate member
-** Reactivate member
 * Jenkins deployment
 * Check tag API
 * HTML frontend
