@@ -1,22 +1,23 @@
 import unittest
 import Doorbot.Config
 import Doorbot.DB as DB
+import Doorbot.DBSqlite3
 import sqlite3
 
 
 class TestDB( unittest.TestCase ):
     @classmethod
     def setUpClass( cls ):
-        conn = sqlite3.connect( ':memory:' )
+        conn = sqlite3.connect( ':memory:', isolation_level = None )
         DB.set_db( conn )
-        #DB.init_db( 'sqlite.sql' )
+        Doorbot.DBSqlite3.create()
 
     @classmethod
     def tearDownClass( cls ):
         DB.close()
 
 
-    def DISABLE_test_member( self ):
+    def test_member( self ):
         DB.add_member( "Foo Bar", "1234" )
         self.assertTrue( True, "Added member" )
 
@@ -41,7 +42,7 @@ class TestDB( unittest.TestCase ):
             "No member found for name",
         )
 
-        member = DB.fetched_member_by_rfid( "4321" )
+        member = DB.fetch_member_by_rfid( "4321" )
         self.assertEqual(
             member,
             None,
