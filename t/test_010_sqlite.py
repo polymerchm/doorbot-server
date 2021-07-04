@@ -49,6 +49,13 @@ class TestDB( unittest.TestCase ):
             "No member found for rfid",
         )
 
+    def test_entry_log( self ):
+        DB.add_member( "Bar Qux", "5678" )
+        DB.log_entry( "5678", "cleanroom.door", True, True )
+        DB.log_entry( "8765", "garage.door", False, False )
+        DB.log_entry( "5678", "woodshop.door", False, True )
+        self.assertTrue( True, "Created entry logs" )
+
 
 if __name__ == '__main__':
     unittest.main()

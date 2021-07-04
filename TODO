@@ -1,7 +1,8 @@
 # Minimum viable product
 * DB
-** Log entry time/active status
 ** Search entry log (offset/limit)
+** Deactivate member
+** Reactivate member
 * Jenkins deployment
 * Check tag API
 * HTML frontend
@@ -19,3 +20,4 @@
 
 # Later
 * Open a door API
+* Link to MemberPress

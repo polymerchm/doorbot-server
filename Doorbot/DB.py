@@ -20,6 +20,20 @@ FETCH_MEMBER_BY_RFID = '''
     WHERE rfid = ?
 '''
 
+LOG_ENTRY = '''
+    INSERT INTO entry_log (
+        rfid
+        ,location_id
+        ,is_active_tag
+        ,is_found_tag
+    ) VALUES (
+        ?
+        ,(SELECT id FROM locations WHERE name = ? LIMIT 1)
+        ,?
+        ,?
+    )
+'''
+
 
 def set_db( conn ):
     global CONN
@@ -77,3 +91,16 @@ def fetch_member_by_rfid(
             'rfid': row[1],
         }
         return member
+
+def log_entry(
+    rfid: str,
+    location: str,
+    is_active_tag: bool,
+    is_found_tag: bool,
+):
+    sql = conn()
+    cur = sql.cursor()
+    cur.execute( LOG_ENTRY, [ rfid, location, is_active_tag, is_found_tag ] )
+    cur.close()
+    return
+
