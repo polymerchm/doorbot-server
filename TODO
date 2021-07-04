@@ -1,5 +1,4 @@
 # Minimum viable product
-* Sanity test setup
 * SQLAlchemy table defintion
 * Dockerize
 * Jenkins deployment
