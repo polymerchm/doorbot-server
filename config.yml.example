@@ -1,0 +1,6 @@
+---
+postgresql:
+    username: bodgery
+    passwd: 
+    database: bodgery
+    logging: True

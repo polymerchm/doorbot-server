@@ -1,4 +1,6 @@
 import unittest
+import Doorbot.Config
+import Doorbot.DB
 
 
 class TestImport( unittest.TestCase ):

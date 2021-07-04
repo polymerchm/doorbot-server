@@ -1,5 +1,7 @@
 # Minimum viable product
-* SQLAlchemy table defintion
+* DB
+** Log entry time/active status
+** Search entry log (offset/limit)
 * Jenkins deployment
 * Check tag API
 * HTML frontend
