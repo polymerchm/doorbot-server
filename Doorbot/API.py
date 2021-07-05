@@ -58,3 +58,14 @@ def log_entry( tag, location ):
         response.status = 403
 
     return response
+
+@app.route( "/secure/new_tag/<tag>/<full_name>", methods = [ "PUT" ] )
+def new_tag( tag, full_name ):
+    response = flask.make_response()
+    if (not MATCH_INT.match( tag )) or (not MATCH_NAME.match( full_name )):
+        response.status = 400
+        return response
+
+    DB.add_member( full_name, tag )
+    response.status = 201
+    return response

@@ -53,6 +53,16 @@ class TestAPI( flask_unittest.ClientTestCase ):
         rv = client.get( '/entry/foobar/cleanroom.door' )
         self.assertStatus( rv, 400 )
 
+    def add_tag( self, client ):
+        rv = client.get( '/check_tag/9012' )
+        self.assertStatus( rv, 404 )
+
+        rv = client.put( '/secure/new_tag/9012' )
+        self.assertStatus( rv, 201 )
+
+        rv = client.get( '/check_tag/9012' )
+        self.assertStatus( rv, 200 )
+
 
 if __name__ == '__main__':
     unittest.main()
