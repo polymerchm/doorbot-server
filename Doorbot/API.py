@@ -109,10 +109,10 @@ def search_tags():
         out += ','.join([
             member[ 'rfid' ],
             member[ 'full_name' ],
-            member[ 'active' ],
+            "1" if member[ 'active' ] else "0",
         ]) + "\n"
 
     response.status = 200
-    response.content_type( 'text/plain' )
+    response.content_type = 'text/plain'
     response.set_data( out )
     return response

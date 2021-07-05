@@ -85,22 +85,17 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 200 )
 
     def test_search( self, client ):
-        # Skip this for now
-        return
         DB.add_member( "Bar Quuux", "09876" )
         DB.add_member( "Bar Quuuux", "67890" )
         DB.add_member( "Baz Quuux", "98765" )
         DB.add_member( "Baz Quuuux", "56789" )
 
-        match_bar = re.compile( '^bar', flags = re.I )
+        match_bar = re.compile( '.*,bar.*', flags = re.I )
 
-        rv = client.get( '/secure/search_tags', data = {
-            'name': "Bar",
-            'offset': 0,
-            'limit': 1,
-        })
+        rv = client.get( '/secure/search_tags?name=Bar&offset=0&limit=1' )
+        data = rv.data.decode( "UTF-8" )
         self.assertTrue(
-            match_bar.match( rv.data.decode( "UTF-8" ) ),
+            match_bar.match( data ),
             "Matched bar",
         )
 
