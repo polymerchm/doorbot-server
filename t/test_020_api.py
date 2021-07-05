@@ -21,7 +21,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
 
     def test_check_tag( self, client ):
         DB.add_member( "Foo Bar", "1234" )
-        DB.add_member( "Foo Bar", "4321" )
+        DB.add_member( "Foo Baz", "4321" )
         DB.deactivate_member( "4321" )
 
         rv = client.get( '/check_tag/1234' )
@@ -34,6 +34,23 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 404 )
 
         rv = client.get( '/check_tag/foobar' )
+        self.assertStatus( rv, 400 )
+
+    def test_entry_location( self, client ):
+        DB.add_member( "Bar Baz", "5678" )
+        DB.add_member( "Bar Qux", "8765" )
+        DB.deactivate_member( "8765" )
+
+        rv = client.get( '/entry/5678/cleanroom.door' )
+        self.assertStatus( rv, 200 )
+
+        rv = client.get( '/entry/8765/cleanroom.door' )
+        self.assertStatus( rv, 403 )
+
+        rv = client.get( '/entry/1111/cleanroom.door' )
+        self.assertStatus( rv, 404 )
+
+        rv = client.get( '/entry/foobar/cleanroom.door' )
         self.assertStatus( rv, 400 )
 
 
