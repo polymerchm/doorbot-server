@@ -1,18 +1,19 @@
 # Minimum viable product
 * API
-** Deactivate tag API
-** Reactivate tag API
 ** Search tags API
 *** By name
 *** By RFID
 *** Offset/limit
 ** Dump activate tags API (JSON)
 ** Alter tag API (not based on existing API)
+** Gather liabilty form emails
+** Mark liability form emails as set
 * PG database interface
 * HTML frontend
 * Jenkins deployment
 
 # Later
+* Alter tag API (not based on existing API)
 * Swagger doc
 * Open a door API
 * Link to MemberPress

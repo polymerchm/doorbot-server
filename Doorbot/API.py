@@ -69,3 +69,50 @@ def new_tag( tag, full_name ):
     DB.add_member( full_name, tag )
     response.status = 201
     return response
+
+@app.route( "/secure/deactivate_tag/<tag>", methods = [ "POST" ] )
+def deactivate_tag( tag ):
+    response = flask.make_response()
+    if not MATCH_INT.match( tag ):
+        response.status = 400
+        return response
+
+    DB.deactivate_member( tag )
+    response.status = 200
+    return response
+
+@app.route( "/secure/reactivate_tag/<tag>", methods = [ "POST" ] )
+def reactivate_tag( tag ):
+    response = flask.make_response()
+    if not MATCH_INT.match( tag ):
+        response.status = 400
+        return response
+
+    DB.activate_member( tag )
+    response.status = 200
+    return response
+
+@app.route( "/secure/search_tags", methods = [ "GET" ] )
+def search_tags():
+    args = flask.request.args
+    response = flask.make_response()
+
+    name = args.get( 'name' )
+    tag = args.get( 'tag' )
+    offset = args.get( 'offset' )
+    limit = args.get( 'limit' )
+
+    members = DB.search_members( name, tag, offset, limit )
+
+    out = ''
+    for member in members:
+        out += ','.join([
+            member[ 'rfid' ],
+            member[ 'full_name' ],
+            member[ 'active' ],
+        ]) + "\n"
+
+    response.status = 200
+    response.content_type( 'text/plain' )
+    response.set_data( out )
+    return response
