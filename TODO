@@ -8,6 +8,7 @@
 *** Offset/limit
 ** Dump activate tags API (JSON)
 ** Alter tag API (not based on existing API)
+* PG database interface
 * HTML frontend
 * Jenkins deployment
 
