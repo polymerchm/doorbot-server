@@ -5,11 +5,11 @@
 *** By RFID
 *** Offset/limit
 ** Dump activate tags API (JSON)
-** Alter tag API (not based on existing API)
 * HTML frontend
 * Jenkins deployment
 
 # Later
+* Alter tag API (not based on existing API)
 * Swagger doc
 * Open a door API
 * Link to MemberPress
