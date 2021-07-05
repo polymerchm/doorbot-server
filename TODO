@@ -6,7 +6,6 @@
 *** By name
 *** By RFID
 *** Offset/limit
-** Entry log API
 ** Dump activate tags API (JSON)
 ** Alter tag API (not based on existing API)
 * HTML frontend
