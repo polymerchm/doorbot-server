@@ -1,8 +1,11 @@
+import unittest
 import flask_unittest
 import flask.globals
+import re
 import sqlite3
 import Doorbot.Config
 import Doorbot.DB as DB
+import Doorbot.DBSqlite3
 import Doorbot.API
 
 
@@ -80,6 +83,27 @@ class TestAPI( flask_unittest.ClientTestCase ):
 
         rv = client.get( '/check_tag/0123' )
         self.assertStatus( rv, 200 )
+
+    def test_search( self, client ):
+        # Skip this for now
+        return
+        DB.add_member( "Bar Quuux", "09876" )
+        DB.add_member( "Bar Quuuux", "67890" )
+        DB.add_member( "Baz Quuux", "98765" )
+        DB.add_member( "Baz Quuuux", "56789" )
+
+        match_bar = re.compile( '^bar', flags = re.I )
+
+        rv = client.get( '/secure/search_tags', data = {
+            'name': "Bar",
+            'offset': 0,
+            'limit': 1,
+        })
+        self.assertTrue(
+            match_bar.match( rv.data.decode( "UTF-8" ) ),
+            "Matched bar",
+        )
+
 
 if __name__ == '__main__':
     unittest.main()

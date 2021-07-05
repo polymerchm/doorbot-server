@@ -52,8 +52,6 @@ SET_MEMBER_ACTIVE_STATUS = '''
     WHERE rfid = ?
 '''
 
-
-
 def set_db( conn ):
     global CONN
     CONN = conn
@@ -169,3 +167,62 @@ def activate_member(
     cur.execute( SET_MEMBER_ACTIVE_STATUS, ( True, rfid ) )
     cur.close()
     return
+
+def _map_search_members( entry ):
+    result = {
+        'rfid': entry[0],
+        'full_name': entry[1],
+        'active': True if entry[2] else False,
+    }
+    return result
+
+def search_members(
+    full_name: str,
+    rfid: str,
+    offset: int,
+    limit: int,
+):
+    where = []
+    end = []
+    params = []
+
+    if full_name:
+        where.append( 'lower(full_name) LIKE ?' )
+        params.append( full_name + '%' )
+
+    if rfid:
+        where.append( 'rfid = ?' )
+        params.append( rfid )
+
+    if limit or offset:
+        end.append( 'ORDER BY join_date' )
+
+    if limit:
+        end.append( 'LIMIT ?' )
+        params.append( limit )
+
+    if offset:
+        end.append( 'OFFSET ?' )
+        params.append( offset )
+
+
+
+    statement = ' '.join([
+        'SELECT rfid, full_name, active FROM members'
+        ' WHERE ' if where else '',
+        ' AND '.join( where ),
+        ' '.join( end ),
+    ])
+
+    sql = conn()
+    cur = sql.cursor()
+    cur.execute( statement, params )
+    rows = cur.fetchall()
+    cur.close()
+
+    results = map(
+        _map_search_members,
+        rows,
+    )
+    return list( results )
+

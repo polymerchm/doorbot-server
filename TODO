@@ -5,6 +5,8 @@
 *** By RFID
 *** Offset/limit
 ** Dump activate tags API (JSON)
+** Gather liabilty form emails
+** Mark liability form emails as set
 * HTML frontend
 * Jenkins deployment
 

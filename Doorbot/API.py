@@ -91,3 +91,28 @@ def reactivate_tag( tag ):
     DB.activate_member( tag )
     response.status = 200
     return response
+
+@app.route( "/secure/search_tags", methods = [ "GET" ] )
+def search_tags():
+    args = flask.request.args
+    response = flask.make_response()
+
+    name = args.get( 'name' )
+    tag = args.get( 'tag' )
+    offset = args.get( 'offset' )
+    limit = args.get( 'limit' )
+
+    members = DB.search_members( name, tag, offset, limit )
+
+    out = ''
+    for member in members:
+        out += ','.join([
+            member[ 'rfid' ],
+            member[ 'full_name' ],
+            member[ 'active' ],
+        ]) + "\n"
+
+    response.status = 200
+    response.content_type( 'text/plain' )
+    response.set_data( out )
+    return response

@@ -20,6 +20,7 @@ class TestDB( unittest.TestCase ):
 
     def test_member( self ):
         DB.add_member( "Foo Bar", "1234" )
+        DB.add_member( "Fooo Bar", "12345" )
         self.assertTrue( True, "Added member" )
 
         member = DB.fetch_member_by_name( "Foo Bar" )
@@ -74,6 +75,15 @@ class TestDB( unittest.TestCase ):
             member[ 'is_active' ],
             "Member is active again",
         )
+
+        members = DB.search_members( "foo", None, 0, 1 )
+        self.assertEquals( len( members ), 1, "Returned one result" )
+
+        members = DB.search_members( "foo", "", 0, 5 )
+        self.assertEquals( len( members ), 2, "Returned both results" )
+
+        members = DB.search_members( "foo", None, 1, 5 )
+        self.assertEquals( len( members ), 1, "Returned offset results" )
 
     def test_entry_log( self ):
         DB.add_member( "Bar Qux", "5678" )
