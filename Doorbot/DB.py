@@ -52,6 +52,10 @@ SET_MEMBER_ACTIVE_STATUS = '''
     WHERE rfid = ?
 '''
 
+DUMP_ACTIVE_MEMBERS = '''
+    SELECT rfid FROM members WHERE active = 1
+'''
+
 def set_db( conn ):
     global CONN
     CONN = conn
@@ -226,3 +230,15 @@ def search_members(
     )
     return list( results )
 
+def dump_active_members():
+    sql = conn()
+    cur = sql.cursor()
+    cur.execute( DUMP_ACTIVE_MEMBERS )
+
+    results = {}
+    for row in cur.fetchall():
+        rfid = row[0]
+        results[ rfid ] = True
+    cur.close()
+
+    return results

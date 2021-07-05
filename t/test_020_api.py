@@ -1,6 +1,7 @@
 import unittest
 import flask_unittest
 import flask.globals
+from flask import json
 import re
 import sqlite3
 import Doorbot.Config
@@ -97,6 +98,25 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertTrue(
             match_bar.match( data ),
             "Matched bar",
+        )
+
+    def test_dump_tags( self, client ):
+        DB.add_member( "Qux Quuux", "45321" )
+        DB.add_member( "Qux Quuuux", "12354" )
+        DB.deactivate_member( "12354" )
+
+
+        rv = client.get( '/secure/dump_active_tags' )
+        data = rv.data.decode( "UTF-8" )
+        data = json.loads( data )
+
+        self.assertTrue(
+            "45321" in data,
+            "Fetched active member",
+        )
+        self.assertFalse(
+            "12354" in data,
+            "Did not fetch deactivated member",
         )
 
 

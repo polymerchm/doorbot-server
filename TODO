@@ -1,6 +1,5 @@
 # Minimum viable product
 * API
-** Dump activate tags API (JSON)
 ** Gather liabilty form emails
 ** Mark liability form emails as set
 * PG database interface

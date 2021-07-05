@@ -118,6 +118,15 @@ class TestDB( unittest.TestCase ):
         self.assertEqual( logs[ -1 ][ 'rfid' ], "5678",
             "Logs ordered correctly" )
 
+    def test_dump_all( self ):
+        DB.add_member( "Baz Quux", "67890" )
+        DB.add_member( "Baz Quuux", "67891" )
+        DB.deactivate_member( "67891" )
+
+        members = DB.dump_active_members()
+        self.assertTrue( "67890" in members, "Active key in dump" )
+        self.assertFalse( "67891" in members, "Deactivated key not in dump" )
+
 
 if __name__ == '__main__':
     unittest.main()

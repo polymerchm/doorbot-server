@@ -116,3 +116,8 @@ def search_tags():
     response.content_type = 'text/plain'
     response.set_data( out )
     return response
+
+@app.route( "/secure/dump_active_tags", methods = [ "GET" ] )
+def dump_tags():
+    out = DB.dump_active_members()
+    return out
