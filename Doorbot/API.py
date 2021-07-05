@@ -69,3 +69,25 @@ def new_tag( tag, full_name ):
     DB.add_member( full_name, tag )
     response.status = 201
     return response
+
+@app.route( "/secure/deactivate_tag/<tag>", methods = [ "POST" ] )
+def deactivate_tag( tag ):
+    response = flask.make_response()
+    if not MATCH_INT.match( tag ):
+        response.status = 400
+        return response
+
+    DB.deactivate_member( tag )
+    response.status = 200
+    return response
+
+@app.route( "/secure/reactivate_tag/<tag>", methods = [ "POST" ] )
+def reactivate_tag( tag ):
+    response = flask.make_response()
+    if not MATCH_INT.match( tag ):
+        response.status = 400
+        return response
+
+    DB.activate_member( tag )
+    response.status = 200
+    return response

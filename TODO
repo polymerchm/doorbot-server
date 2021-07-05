@@ -1,7 +1,5 @@
 # Minimum viable product
 * API
-** Deactivate tag API
-** Reactivate tag API
 ** Search tags API
 *** By name
 *** By RFID

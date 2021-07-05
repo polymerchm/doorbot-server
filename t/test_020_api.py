@@ -63,6 +63,23 @@ class TestAPI( flask_unittest.ClientTestCase ):
         rv = client.get( '/check_tag/9012' )
         self.assertStatus( rv, 200 )
 
+    def test_activate_deactivate_member( self, client ):
+        DB.add_member( "Qux Quux", "0123" )
+
+        rv = client.get( '/check_tag/0123' )
+        self.assertStatus( rv, 200 )
+
+        rv = client.post( '/secure/deactivate_tag/0123' )
+        self.assertStatus( rv, 200 )
+
+        rv = client.get( '/check_tag/0123' )
+        self.assertStatus( rv, 403 )
+
+        rv = client.post( '/secure/reactivate_tag/0123' )
+        self.assertStatus( rv, 200 )
+
+        rv = client.get( '/check_tag/0123' )
+        self.assertStatus( rv, 200 )
 
 if __name__ == '__main__':
     unittest.main()
