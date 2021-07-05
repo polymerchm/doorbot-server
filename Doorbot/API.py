@@ -1,4 +1,5 @@
 import flask
+import os
 import re
 import Doorbot.DB as DB
 
@@ -19,8 +20,16 @@ MATCH_NAME = re.compile( ''.join([
 ]) )
 
 
-app = flask.Flask( __name__ )
+app = flask.Flask( __name__,
+    static_url_path = '',
+    static_folder = '../static',
+)
 
+
+@app.route( "/" )
+@app.route( "/index.html" )
+def redirect_home():
+    return flask.redirect( '/secure/index.html', code = 301 )
 
 @app.route( "/check_tag/<tag>",  methods = [ "GET" ] )
 def check_tag( tag ):
@@ -121,3 +130,9 @@ def search_tags():
 def dump_tags():
     out = DB.dump_active_members()
     return out
+
+#@app.route('/', defaults={'path': ''})
+#@app.route( "/<path:path>" )
+#def catch_all_secure( path ):
+#    print( f'Hit catch all with {path}' )
+#    return flask.send_from_directory( 'static', path )
