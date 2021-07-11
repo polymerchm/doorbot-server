@@ -65,4 +65,28 @@ node {
             throw err
         }
     }
+
+    stage( 'Push to Docker Reg' ) {
+        try {
+            docker.withRegistry(
+                'https://docker.shop.thebodgery.org',
+                ,'docker_reg'
+            ) {
+                branch_tag = "${env.BRANCH_NAME}-latest"
+                branch_tag_uuid = "${env.BRANCH_NAME}-${project_uuid}"
+                branch_tag_build = "${env.BRANCH_NAME}-${env.BUILD_NUMBER}"
+
+                app.push( branch_tag )
+                app.push( branch_tag_uuid )
+                app.push( branch_tag_build )
+            }
+        }
+        catch( err ) {
+            slackSend(
+                color: '#ff0000',
+                message: "Failed build of doorbot server during Build Docker Reg  stage [build #${env.BUILD_NUMBER}, branch ${env.BRANCH_NAME}] (<${env.BUILD_URL}|Open>)"
+            )
+            throw err
+        }
+    }
 }
