@@ -84,7 +84,7 @@ node {
         catch( err ) {
             slackSend(
                 color: '#ff0000',
-                message: "Failed build of doorbot server during Build Docker Reg  stage [build #${env.BUILD_NUMBER}, branch ${env.BRANCH_NAME}] (<${env.BUILD_URL}|Open>)"
+                message: "Failed build of doorbot server during Push Docker Reg  stage [build #${env.BUILD_NUMBER}, branch ${env.BRANCH_NAME}] (<${env.BUILD_URL}|Open>)"
             )
             throw err
         }
