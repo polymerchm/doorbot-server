@@ -43,7 +43,25 @@ node {
         catch( err ) {
             slackSend(
                 color: '#ff0000',
-                message: "Build ${env.BUILD_NUMBER} of doorbot server failed"
+                message: "Failed build of doorbot server during Build stage [build #${env.BUILD_NUMBER}, branch ${env.BRANCH_NAME}] (<${env.BUILD_URL}|Open>)"
+            )
+            throw err
+        }
+    }
+
+    stage( 'Test' ) {
+        try {
+            app.inside {
+                dir( "t" ) {
+                    sh 'PYTHONPATH=./:../:${PYTHONPATH} python3 -m nose2'
+                }
+            }
+        }
+        catch( err ) {
+            discordMsg( "Failed during Test step; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})" )
+            slackSend(
+                color: '#ff0000',
+                message: "Failed build of doorbot server during Test stage [build #${env.BUILD_NUMBER}, branch ${env.BRANCH_NAME}] (<${env.BUILD_URL}|Open>)"
             )
             throw err
         }
