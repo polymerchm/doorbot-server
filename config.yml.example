@@ -4,3 +4,7 @@ postgresql:
     passwd: 
     database: bodgery
     logging: True
+
+build_id:
+build_branch:
+build_date:
