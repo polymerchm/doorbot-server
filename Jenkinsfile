@@ -58,7 +58,6 @@ node {
             }
         }
         catch( err ) {
-            discordMsg( "Failed during Test step; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})" )
             slackSend(
                 color: '#ff0000',
                 message: "Failed build of doorbot server during Test stage [build #${env.BUILD_NUMBER}, branch ${env.BRANCH_NAME}] (<${env.BUILD_URL}|Open>)"
