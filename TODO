@@ -1,8 +1,13 @@
 # Minimum viable product
+* Test on dev
 * Make a copy of the existing Pg database on prod
 * Jenkins deploy to the prod environment
 
 # Next priority
+* Documentation
+** README on developer setup
+** Wiki page on broad overview of system
+** Code docs
 * API
 ** Gather liabilty form emails
 ** Mark liability form emails as set
