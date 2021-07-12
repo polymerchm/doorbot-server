@@ -1,36 +1,37 @@
 import psycopg2
+import re
 import sqlite3
 
 CONN = None
 
 INSERT_MEMBER = '''
     INSERT INTO members
-        (full_name, rfid, phone, email)
+        (full_name, rfid, phone, email, entry_type)
     VALUES
-        (?, ?, '', '')
+        (%s, %s, '', '', '')
 '''
 FETCH_MEMBER_BY_NAME = '''
     SELECT full_name, rfid, active
     FROM members
-    WHERE full_name LIKE ?
+    WHERE full_name LIKE %s
 '''
 FETCH_MEMBER_BY_RFID = '''
     SELECT full_name, rfid, active
     FROM members
-    WHERE rfid = ?
+    WHERE rfid = %s
 '''
 
 LOG_ENTRY = '''
     INSERT INTO entry_log (
         rfid
-        ,location_id
+        ,location
         ,is_active_tag
         ,is_found_tag
     ) VALUES (
-        ?
-        ,(SELECT id FROM locations WHERE name = ? LIMIT 1)
-        ,?
-        ,?
+        %s
+        ,(SELECT id FROM locations WHERE name = %s LIMIT 1)
+        ,%s
+        ,%s
     )
 '''
 FETCH_ENTRIES = '''
@@ -40,21 +41,36 @@ FETCH_ENTRIES = '''
         ,entry_log.is_active_tag
         ,entry_log.is_found_tag
     FROM entry_log
-    JOIN locations ON entry_log.location_id = locations.id
+    JOIN locations ON entry_log.location = locations.id
     ORDER BY entry_time DESC
-    LIMIT ?
-    OFFSET ?
+    LIMIT %s
+    OFFSET %s
 '''
 
 SET_MEMBER_ACTIVE_STATUS = '''
     UPDATE members
-    SET active = ?
-    WHERE rfid = ?
+    SET active = %s
+    WHERE rfid = %s
 '''
 
 DUMP_ACTIVE_MEMBERS = '''
+    SELECT rfid FROM members WHERE active = True
+'''
+SQLITE_DUMP_ACTIVE_MEMBERS = '''
     SELECT rfid FROM members WHERE active = 1
 '''
+
+LOWER_NAME_SEARCH = '''
+    lower(full_name) LIKE %s
+'''
+LIMIT = '''
+    LIMIT %s
+'''
+OFFSET = '''
+    OFFSET %s
+'''
+
+
 
 def set_db( conn ):
     global CONN
@@ -65,6 +81,37 @@ def conn():
 
 def close():
     CONN.close()
+
+def set_sqlite():
+    placeholder_change = re.compile( '%s' )
+
+    # No, python does not have sensible variable scoping rules, why do you ask?
+    global INSERT_MEMBER
+    global FETCH_MEMBER_BY_NAME
+    global FETCH_MEMBER_BY_RFID
+    global LOG_ENTRY
+    global FETCH_ENTRIES
+    global SET_MEMBER_ACTIVE_STATUS
+    global DUMP_ACTIVE_MEMBERS
+    global LOWER_NAME_SEARCH
+    global LIMIT
+    global OFFSET
+
+    INSERT_MEMBER = re.sub( placeholder_change, '?', INSERT_MEMBER )
+    FETCH_MEMBER_BY_NAME = re.sub( placeholder_change, '?',
+        FETCH_MEMBER_BY_NAME )
+    FETCH_MEMBER_BY_RFID = re.sub( placeholder_change, '?',
+        FETCH_MEMBER_BY_RFID )
+    LOG_ENTRY = re.sub( placeholder_change, '?', LOG_ENTRY )
+    FETCH_ENTRIES = re.sub( placeholder_change, '?', FETCH_ENTRIES )
+    SET_MEMBER_ACTIVE_STATUS = re.sub( placeholder_change, '?',
+        SET_MEMBER_ACTIVE_STATUS )
+    LOWER_NAME_SEARCH = re.sub( placeholder_change, '?', LOWER_NAME_SEARCH )
+    LIMIT = re.sub( placeholder_change, '?', LIMIT )
+    OFFSET = re.sub( placeholder_change, '?', OFFSET )
+
+
+    DUMP_ACTIVE_MEMBERS = SQLITE_DUMP_ACTIVE_MEMBERS
 
 
 def add_member(
@@ -191,7 +238,7 @@ def search_members(
     params = []
 
     if full_name:
-        where.append( 'lower(full_name) LIKE ?' )
+        where.append( LOWER_NAME_SEARCH )
         params.append( full_name + '%' )
 
     if rfid:
@@ -202,11 +249,11 @@ def search_members(
         end.append( 'ORDER BY join_date' )
 
     if limit:
-        end.append( 'LIMIT ?' )
+        end.append( LIMIT )
         params.append( limit )
 
     if offset:
-        end.append( 'OFFSET ?' )
+        end.append( OFFSET )
         params.append( offset )
 
 

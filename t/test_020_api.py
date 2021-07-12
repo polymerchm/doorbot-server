@@ -2,6 +2,8 @@ import unittest
 import flask_unittest
 import flask.globals
 from flask import json
+import os
+import psycopg2
 import re
 import sqlite3
 import Doorbot.Config
@@ -15,9 +17,25 @@ class TestAPI( flask_unittest.ClientTestCase ):
 
     @classmethod
     def setUpClass( cls ):
-        conn = sqlite3.connect( ':memory:', isolation_level = None )
-        DB.set_db( conn )
-        Doorbot.DBSqlite3.create()
+        if 'PG' == os.environ.get( 'DB' ):
+            pg_conf = Doorbot.Config.get( 'postgresql' )
+            user = pg_conf[ 'username' ]
+            passwd = pg_conf[ 'passwd' ]
+            database = pg_conf[ 'database' ]
+
+            conn_str = ' '.join([
+                'dbname=' + database,
+                'user=' + user,
+                'password=' + passwd,
+            ])
+            conn = psycopg2.connect( conn_str )
+            conn.set_session( autocommit = True )
+            DB.set_db( conn )
+        else:
+            conn = sqlite3.connect( ':memory:', isolation_level = None )
+            DB.set_db( conn )
+            DB.set_sqlite()
+            Doorbot.DBSqlite3.create()
 
     @classmethod
     def tearDownClass( cls ):

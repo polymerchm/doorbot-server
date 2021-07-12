@@ -10,6 +10,7 @@ TABLES = [
         end_date DATE,
         phone TEXT NOT NULL,
         email TEXT NOT NULL,
+        entry_type TEXT NOT NULL,
         notes TEXT
     )''',
 
@@ -26,7 +27,7 @@ TABLES = [
         entry_time      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         is_active_tag   BOOLEAN NOT NULL,
         is_found_tag    BOOLEAN NOT NULL,
-        location_id     INT REFERENCES locations (id)
+        location        INT REFERENCES locations (id)
     )''',
     'CREATE INDEX entry_log_time_inx ON entry_log (entry_time DESC)',
     '''INSERT INTO locations (name) VALUES

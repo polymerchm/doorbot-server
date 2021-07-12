@@ -16,10 +16,10 @@ CREATE TABLE locations (
     name TEXT NOT NULL UNIQUE
 );
 INSERT INTO locations (name) VALUES
-    ( "cleanroom.door" )
-    ,( "garage.door" )
-    ,( "woodshop.door" )
-    ,( "dummy" );
+    ( 'cleanroom.door' )
+    ,( 'garage.door' )
+    ,( 'woodshop.door' )
+    ,( 'dummy' );
 
 CREATE TABLE entry_log (
     id              SERIAL PRIMARY KEY NOT NULL,

@@ -3,7 +3,6 @@ postgresql:
     username: bodgery
     passwd: 
     database: bodgery
-    logging: True
 
 build_id:
 build_branch:

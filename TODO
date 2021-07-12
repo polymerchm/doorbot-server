@@ -1,6 +1,6 @@
 # Minimum viable product
-* PG database interface
-* Jenkins deployment
+* Make a copy of the existing Pg database on prod
+* Jenkins deploy to the prod environment
 
 # Next priority
 * API
@@ -9,6 +9,8 @@
 ** Alter tag API (not based on existing API)
 
 # Later(tm)
+* Tests with Pg should create a whole new database
+* Jenkins runs the Pg tests
 * Swagger doc
 * Open a door API
 * Link to MemberPress
