@@ -3,7 +3,6 @@ import Doorbot.Config
 import Doorbot.DB
 import Doorbot.DBSqlite3
 import Doorbot.API
-import app
 
 
 class TestImport( unittest.TestCase ):

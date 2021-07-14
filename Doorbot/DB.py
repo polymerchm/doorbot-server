@@ -258,12 +258,14 @@ def search_members(
 
 
 
-    statement = ' '.join([
+    statements = [
         'SELECT rfid, full_name, active FROM members'
-        ' WHERE ' if where else '',
-        ' AND '.join( where ),
-        ' '.join( end ),
-    ])
+    ]
+    if where:
+        statements.append( 'WHERE' )
+        statements.append( ' AND '.join( where ) )
+    statements.append( ' '.join( end ) )
+    statement = ' '.join( statements )
 
     sql = conn()
     cur = sql.cursor()
