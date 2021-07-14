@@ -111,6 +111,17 @@ def search_tags():
     offset = args.get( 'offset' )
     limit = args.get( 'limit' )
 
+    offset = int( offset ) if offset else 0
+    limit = int( limit ) if limit else 0
+
+    # Clamp offset/limit
+    if offset < 0:
+        offset = 0
+    if limit < 0:
+        limit = 50
+    elif limit > 100:
+        limit = 100
+
     members = DB.search_members( name, tag, offset, limit )
 
     out = ''

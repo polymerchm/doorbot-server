@@ -109,9 +109,16 @@ class TestAPI( flask_unittest.ClientTestCase ):
         DB.add_member( "Baz Quuux", "98765" )
         DB.add_member( "Baz Quuuux", "56789" )
 
-        match_bar = re.compile( '.*,bar.*', flags = re.I )
+        match_bar = re.compile( '.*,Bar.*', re.MULTILINE | re.DOTALL )
 
         rv = client.get( '/secure/search_tags?name=Bar&offset=0&limit=1' )
+        data = rv.data.decode( "UTF-8" )
+        self.assertTrue(
+            match_bar.match( data ),
+            "Matched bar",
+        )
+
+        rv = client.get( '/secure/search_tags' )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
             match_bar.match( data ),

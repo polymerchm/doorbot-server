@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import flask
 import psycopg2
 import Doorbot.Config
@@ -16,3 +17,6 @@ conn_str = ' '.join([
 ])
 conn = psycopg2.connect( conn_str )
 Doorbot.DB.set_db( conn )
+
+if __name__ == "__main__":
+    app.run( host = "0.0.0.0" )
