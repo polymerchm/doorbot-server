@@ -1,6 +1,4 @@
 # Minimum viable product
-* API
-** Search entry log
 * Test on dev
 * Make a copy of the existing Pg database on prod
 * Jenkins deploy to the prod environment
