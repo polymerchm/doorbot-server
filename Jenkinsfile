@@ -110,6 +110,7 @@ node {
             remote.host = "10.0.4.164"
             remote.allowAnyHosts = true
 
+            // Only pull the main-latest branch to dev
             try {
                 sshCommand(
                     remote: remote
@@ -117,9 +118,19 @@ node {
                 )
             }
             catch( err ) {
-                discordMsg( "Failed pulling to environment; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})" )
+                slackSend(
+                    color: '#ff0000',
+                    message: "Failed pulling to environment; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})"
+                )
                 throw err
             }
         }
+    }
+
+    stage( 'Finish' ) {
+        slackSend(
+            color: 'good',
+            message: "Build finished; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})"
+        )
     }
 }
