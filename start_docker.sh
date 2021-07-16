@@ -14,7 +14,7 @@ then
 fi
 
 echo "Starting ${NAME}"
-docker run 
+docker run \
     -p 5000:5000 \
     -p 5432:5432 \
     -d --name=${CONTAINER_NAME} \
