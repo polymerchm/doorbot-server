@@ -1,4 +1,4 @@
-pipeline {
+node {
     def app
     def branch_tag
     def project_uuid = UUID.randomUUID().toString()
