@@ -92,39 +92,34 @@ node {
         }
 
         stage( 'Pull to Environment' ) {
-            when {
-                branch 'main'
-            }
-            steps {
-                withCredentials([
-                    sshUserPrivateKey(
-                        keyFileVariable: 'SSH_KEY_PATH'
-                        ,usernameVariable: 'SSH_USERNAME'
-                        ,credentialsId: 'rfid_dev_ssh'
-                    )
-                    ,usernamePassword(
-                        usernameVariable: 'DOCKER_USER'
-                        ,passwordVariable: 'DOCKER_PASS'
-                        ,credentialsId: 'docker_reg'
-                    )
-                ]) {
-                    def remote = [:]
-                    remote.name = "tradebot"
-                    remote.user = SSH_USERNAME
-                    remote.identityFile = SSH_KEY_PATH
-                    remote.host = "10.0.4.164"
-                    remote.allowAnyHosts = true
+            withCredentials([
+                sshUserPrivateKey(
+                    keyFileVariable: 'SSH_KEY_PATH'
+                    ,usernameVariable: 'SSH_USERNAME'
+                    ,credentialsId: 'rfid_dev_ssh'
+                )
+                ,usernamePassword(
+                    usernameVariable: 'DOCKER_USER'
+                    ,passwordVariable: 'DOCKER_PASS'
+                    ,credentialsId: 'docker_reg'
+                )
+            ]) {
+                def remote = [:]
+                remote.name = "tradebot"
+                remote.user = SSH_USERNAME
+                remote.identityFile = SSH_KEY_PATH
+                remote.host = "10.0.4.164"
+                remote.allowAnyHosts = true
 
-                    try {
-                        sshCommand(
-                            remote: remote
-                            ,command: "docker login -u ${DOCKER_USER} -p '${DOCKER_PASS}' https://docker.shop.thebodgery.org && docker pull docker.shop.thebodgery.org/doorbot:main-latest"
-                        )
-                    }
-                    catch( err ) {
-                        discordMsg( "Failed pulling to environment; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})" )
-                        throw err
-                    }
+                try {
+                    sshCommand(
+                        remote: remote
+                        ,command: "docker login -u ${DOCKER_USER} -p '${DOCKER_PASS}' https://docker.shop.thebodgery.org && docker pull docker.shop.thebodgery.org/doorbot:main-latest"
+                    )
+                }
+                catch( err ) {
+                    discordMsg( "Failed pulling to environment; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})" )
+                    throw err
                 }
             }
         }
