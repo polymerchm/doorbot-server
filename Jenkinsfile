@@ -145,7 +145,7 @@ node {
             try {
                 sshCommand(
                     remote: remote
-                    ,command: "/usr/local/bin/start_docker.sh rfid-dev doorbot:main-latest"
+                    ,command: "/usr/local/bin/start_docker.sh doorbot:main-latest rfid-dev"
                 )
             }
             catch( err ) {
