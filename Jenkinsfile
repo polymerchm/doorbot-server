@@ -104,7 +104,7 @@ node {
             )
         ]) {
             def remote = [:]
-            remote.name = "tradebot"
+            remote.name = "jenkins"
             remote.user = SSH_USERNAME
             remote.identityFile = SSH_KEY_PATH
             remote.host = "10.0.4.164"
@@ -121,6 +121,37 @@ node {
                 slackSend(
                     color: '#ff0000',
                     message: "Failed pulling to environment; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})"
+                )
+                throw err
+            }
+        }
+    }
+
+    stage( 'Run on Environment' ) {
+        withCredentials([
+            sshUserPrivateKey(
+                keyFileVariable: 'SSH_KEY_PATH'
+                ,usernameVariable: 'SSH_USERNAME'
+                ,credentialsId: 'rfid_dev_ssh'
+            )
+        ]) {
+            def remote = [:]
+            remote.name = "jenkins"
+            remote.user = SSH_USERNAME
+            remote.identityFile = SSH_KEY_PATH
+            remote.host = "10.0.4.164"
+            remote.allowAnyHosts = true
+
+            try {
+                sshCommand(
+                    remote: remote
+                    ,command: "/usr/local/bin/start_docker.sh doorbot main-latest"
+                )
+            }
+            catch( err ) {
+                slackSend(
+                    color: '#ff0000',
+                    message: "Failed executing in environment; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})"
                 )
                 throw err
             }
