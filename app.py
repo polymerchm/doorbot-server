@@ -9,11 +9,15 @@ pg_conf = Doorbot.Config.get( 'postgresql' )
 user = pg_conf[ 'username' ]
 passwd = pg_conf[ 'passwd' ]
 database = pg_conf[ 'database' ]
+host = pg_conf[ 'host' ]
+port = pg_conf[ 'port' ]
 
 conn_str = ' '.join([
     'dbname=' + database,
     'user=' + user,
     'password=' + passwd,
+    'host=' + host,
+    'port=' + port,
 ])
 conn = psycopg2.connect( conn_str )
 Doorbot.DB.set_db( conn )
