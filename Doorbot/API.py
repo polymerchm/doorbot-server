@@ -167,7 +167,7 @@ def search_entry_log():
             entry[ 'entry_time' ],
             "1" if entry[ 'is_active_tag' ] else "0",
             "1" if entry[ 'is_found_tag' ] else "0",
-            entry[ 'location' ]
+            entry[ 'location' ] if entry[ 'location' ] else "",
         ]) + "\n"
 
     response.status = 200

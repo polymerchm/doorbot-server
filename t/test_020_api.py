@@ -139,6 +139,8 @@ class TestAPI( flask_unittest.ClientTestCase ):
             "Matched RFID tag",
         )
 
+        # Test for blank location
+        DB.log_entry( "09876", None, True, True )
         rv = client.get( '/secure/search_entry_log' )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
