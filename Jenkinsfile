@@ -32,6 +32,8 @@ node {
                     conf.postgresql.passwd = RFID_DB_PASSWORD
                     conf.postgresql.username = 'doorbot'
                     conf.postgresql.database = 'doorbot-' + project_uuid
+                    conf.postgresql.host = '10.0.4.164'
+                    conf.postgresql.port = 5432
                     conf.build_id = env.BUILD_ID
                     conf.build_branch = env.BRANCH_NAME
                     conf.build_date = env.BUILD_TIMESTAMP
