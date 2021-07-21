@@ -77,6 +77,7 @@ LIMIT = '''
 OFFSET = '''
     OFFSET %s
 '''
+PLACEHOLDER = '%s'
 
 DT_CONVERT_FUNC = None
 
@@ -114,6 +115,7 @@ def set_sqlite():
     global LOWER_NAME_SEARCH
     global LIMIT
     global OFFSET
+    global PLACEHOLDER
     global DT_CONVERT_FUNC
 
     INSERT_MEMBER = re.sub( placeholder_change, '?', INSERT_MEMBER )
@@ -134,7 +136,7 @@ def set_sqlite():
 
 
     DUMP_ACTIVE_MEMBERS = SQLITE_DUMP_ACTIVE_MEMBERS
-
+    PLACEHOLDER = '?'
     DT_CONVERT_FUNC = _sqlite_datetime_convert
 
 
@@ -278,7 +280,7 @@ def search_members(
         params.append( full_name + '%' )
 
     if rfid:
-        where.append( 'rfid = ?' )
+        where.append( 'rfid = ' + PLACEHOLDER )
         params.append( rfid )
 
     if limit or offset:
