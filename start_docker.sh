@@ -17,4 +17,5 @@ echo "Starting ${NAME}"
 docker run \
     -p 5000:5000 \
     -d --name=${CONTAINER_NAME} \
+    --add-host=database:10.0.4.164 \
     docker.shop.thebodgery.org/${NAME}
