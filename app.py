@@ -20,6 +20,7 @@ conn_str = ' '.join([
     'port=' + str( port ),
 ])
 conn = psycopg2.connect( conn_str )
+conn.set_session( autocommit = True )
 Doorbot.DB.set_db( conn )
 
 if __name__ == "__main__":
