@@ -17,7 +17,7 @@ conn_str = ' '.join([
     'user=' + user,
     'password=' + passwd,
     'host=' + host,
-    'port=' + port,
+    'port=' + str( port ),
 ])
 conn = psycopg2.connect( conn_str )
 Doorbot.DB.set_db( conn )
