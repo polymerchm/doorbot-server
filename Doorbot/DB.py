@@ -34,15 +34,23 @@ LOG_ENTRY = '''
         ,%s
     )
 '''
-FETCH_ENTRIES = '''
+FETCH_ENTRIES_START = '''
     SELECT
-        entry_log.rfid
-        ,locations.name
-        ,entry_log.is_active_tag
-        ,entry_log.is_found_tag
+        members.full_name AS full_name
+        ,entry_log.rfid AS rfid
+        ,locations.name AS location
+        ,entry_log.entry_time AS entry_time
+        ,entry_log.is_active_tag AS is_active_tag
+        ,entry_log.is_found_tag AS is_found_tag
     FROM entry_log
-    JOIN locations ON entry_log.location = locations.id
-    ORDER BY entry_time DESC
+    LEFT OUTER JOIN members ON entry_log.rfid = members.rfid
+    LEFT OUTER JOIN locations ON entry_log.location = locations.id
+'''
+FETCH_ENTRIES_WHERE_CLAUSE = '''
+    WHERE entry_log.rfid = %s
+'''
+FETCH_ENTRIES_END = '''
+    ORDER BY entry_log.entry_time DESC
     LIMIT %s
     OFFSET %s
 '''
@@ -69,8 +77,17 @@ LIMIT = '''
 OFFSET = '''
     OFFSET %s
 '''
+PLACEHOLDER = '%s'
+
+DT_CONVERT_FUNC = None
 
 
+
+def _pg_datetime_convert( dt ):
+    return dt.isoformat()
+
+def _sqlite_datetime_convert( dt ):
+    return dt
 
 def set_db( conn ):
     global CONN
@@ -90,12 +107,16 @@ def set_sqlite():
     global FETCH_MEMBER_BY_NAME
     global FETCH_MEMBER_BY_RFID
     global LOG_ENTRY
-    global FETCH_ENTRIES
+    global FETCH_ENTRIES_START
+    global FETCH_ENTRIES_WHERE_CLAUSE
+    global FETCH_ENTRIES_END
     global SET_MEMBER_ACTIVE_STATUS
     global DUMP_ACTIVE_MEMBERS
     global CASE_INSENSITIVE_NAME_SEARCH
     global LIMIT
     global OFFSET
+    global PLACEHOLDER
+    global DT_CONVERT_FUNC
 
     INSERT_MEMBER = re.sub( placeholder_change, '?', INSERT_MEMBER )
     FETCH_MEMBER_BY_NAME = re.sub( placeholder_change, '?',
@@ -103,7 +124,10 @@ def set_sqlite():
     FETCH_MEMBER_BY_RFID = re.sub( placeholder_change, '?',
         FETCH_MEMBER_BY_RFID )
     LOG_ENTRY = re.sub( placeholder_change, '?', LOG_ENTRY )
-    FETCH_ENTRIES = re.sub( placeholder_change, '?', FETCH_ENTRIES )
+    FETCH_ENTRIES_START = re.sub( placeholder_change, '?', FETCH_ENTRIES_START )
+    FETCH_ENTRIES_WHERE_CLAUSE = re.sub( placeholder_change, '?',
+        FETCH_ENTRIES_WHERE_CLAUSE )
+    FETCH_ENTRIES_END = re.sub( placeholder_change, '?', FETCH_ENTRIES_END )
     SET_MEMBER_ACTIVE_STATUS = re.sub( placeholder_change, '?',
         SET_MEMBER_ACTIVE_STATUS )
     CASE_INSENSITIVE_NAME_SEARCH = re.sub( placeholder_change, '?',
@@ -121,6 +145,8 @@ def set_sqlite():
 
 
     DUMP_ACTIVE_MEMBERS = SQLITE_DUMP_ACTIVE_MEMBERS
+    PLACEHOLDER = '?'
+    DT_CONVERT_FUNC = _sqlite_datetime_convert
 
 
 def add_member(
@@ -187,20 +213,32 @@ def log_entry(
 
 def _map_entry( entry ):
     result = {
-        'rfid': entry[0],
-        'name': entry[1],
-        'is_active_tag': True if entry[2] else False,
-        'is_found_tag': True if entry[3] else False,
+        'full_name': entry[0],
+        'rfid': entry[1],
+        'location': entry[2],
+        'entry_time': DT_CONVERT_FUNC( entry[3] ),
+        'is_active_tag': True if entry[4] else False,
+        'is_found_tag': True if entry[5] else False,
     }
     return result
 
 def fetch_entries(
     limit: int = 100,
     offset: int = 0,
+    tag: str = "",
 ):
+    statement = FETCH_ENTRIES_START
+    params = []
+    if tag:
+        statement += FETCH_ENTRIES_WHERE_CLAUSE
+        params.append( tag )
+    statement += FETCH_ENTRIES_END
+    params.append( limit )
+    params.append( offset )
+
     sql = conn()
     cur = sql.cursor()
-    cur.execute( FETCH_ENTRIES, [ limit, offset ] )
+    cur.execute( statement, params )
     rows = cur.fetchall()
     cur.close()
 
@@ -251,7 +289,7 @@ def search_members(
         params.append( '%' + full_name + '%' )
 
     if rfid:
-        where.append( 'rfid = ?' )
+        where.append( 'rfid = ' + PLACEHOLDER )
         params.append( rfid )
 
     if limit or offset:
@@ -267,12 +305,14 @@ def search_members(
 
 
 
-    statement = ' '.join([
+    statements = [
         'SELECT rfid, full_name, active FROM members'
-        ' WHERE ' if where else '',
-        ' AND '.join( where ),
-        ' '.join( end ),
-    ])
+    ]
+    if where:
+        statements.append( 'WHERE' )
+        statements.append( ' AND '.join( where ) )
+    statements.append( ' '.join( end ) )
+    statement = ' '.join( statements )
 
     sql = conn()
     cur = sql.cursor()
@@ -298,3 +338,7 @@ def dump_active_members():
     cur.close()
 
     return results
+
+
+
+DT_CONVERT_FUNC = _pg_datetime_convert

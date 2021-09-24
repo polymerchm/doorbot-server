@@ -23,6 +23,7 @@ class TestDB( unittest.TestCase ):
                 'password=' + passwd,
             ])
             conn = psycopg2.connect( conn_str )
+            conn.set_session( autocommit = True )
             DB.set_db( conn )
         else:
             conn = sqlite3.connect( ':memory:', isolation_level = None )

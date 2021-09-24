@@ -31,7 +31,9 @@ node {
 
                     conf.postgresql.passwd = RFID_DB_PASSWORD
                     conf.postgresql.username = 'doorbot'
-                    conf.postgresql.database = 'doorbot-' + project_uuid
+                    conf.postgresql.database = 'doorbot'
+                    conf.postgresql.host = 'database'
+                    conf.postgresql.port = 5432
                     conf.build_id = env.BUILD_ID
                     conf.build_branch = env.BRANCH_NAME
                     conf.build_date = env.BUILD_TIMESTAMP
@@ -88,5 +90,80 @@ node {
             )
             throw err
         }
+    }
+
+    stage( 'Pull to Environment' ) {
+        withCredentials([
+            sshUserPrivateKey(
+                keyFileVariable: 'SSH_KEY_PATH'
+                ,usernameVariable: 'SSH_USERNAME'
+                ,credentialsId: 'rfid_dev_ssh'
+            )
+            ,usernamePassword(
+                usernameVariable: 'DOCKER_USER'
+                ,passwordVariable: 'DOCKER_PASS'
+                ,credentialsId: 'docker_reg'
+            )
+        ]) {
+            def remote = [:]
+            remote.name = "jenkins"
+            remote.user = SSH_USERNAME
+            remote.identityFile = SSH_KEY_PATH
+            remote.host = "10.0.4.164"
+            remote.allowAnyHosts = true
+
+            // Only pull the main-latest branch to dev
+            try {
+                sshCommand(
+                    remote: remote
+                    ,command: "docker login -u ${DOCKER_USER} -p '${DOCKER_PASS}' https://docker.shop.thebodgery.org && docker pull docker.shop.thebodgery.org/doorbot:main-latest"
+                )
+            }
+            catch( err ) {
+                slackSend(
+                    color: '#ff0000',
+                    message: "Failed pulling to environment; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})"
+                )
+                throw err
+            }
+        }
+    }
+
+    stage( 'Run on Environment' ) {
+        withCredentials([
+            sshUserPrivateKey(
+                keyFileVariable: 'SSH_KEY_PATH'
+                ,usernameVariable: 'SSH_USERNAME'
+                ,credentialsId: 'rfid_dev_ssh'
+            )
+        ]) {
+            def remote = [:]
+            remote.name = "jenkins"
+            remote.user = SSH_USERNAME
+            remote.identityFile = SSH_KEY_PATH
+            remote.host = "10.0.4.164"
+            remote.allowAnyHosts = true
+
+            try {
+                sshCommand(
+                    remote: remote
+                    ,command: "/usr/local/bin/start_docker.sh doorbot:main-latest rfid-dev"
+                )
+            }
+            catch( err ) {
+                slackSend(
+                    color: '#ff0000',
+                    message: "Failed executing in environment; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})"
+                )
+                throw err
+            }
+        }
+    }
+
+    stage( 'Finish' ) {
+        slackSend(
+            color: 'good',
+            message: "Build finished; ${env.BUILD_ID} on ${env.BRANCH_NAME} (${env.BUILD_URL})"
+        )
     }
 }

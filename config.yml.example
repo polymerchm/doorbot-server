@@ -3,6 +3,8 @@ postgresql:
     username: bodgery
     passwd: 
     database: bodgery
+    host: localhost
+    port: 5432
 
 build_id:
 build_branch:

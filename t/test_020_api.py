@@ -103,13 +103,13 @@ class TestAPI( flask_unittest.ClientTestCase ):
         rv = client.get( '/check_tag/0123' )
         self.assertStatus( rv, 200 )
 
-    def test_search( self, client ):
-        DB.add_member( "Bar Quuux", "09876" )
-        DB.add_member( "Bar Quuuux", "67890" )
-        DB.add_member( "Baz Quuux", "98765" )
-        DB.add_member( "Baz Quuuux", "56789" )
+    def test_search_tags( self, client ):
+        DB.add_member( "Bar Quuux", "09865" )
+        DB.add_member( "Bar Quuuux", "98764" )
+        DB.add_member( "Baz Quuux", "87653" )
+        DB.add_member( "Baz Quuuux", "76542" )
 
-        match_bar = re.compile( '.*,.*bar.*', flags = re.I )
+        match_bar = re.compile( '.*,.*Bar.*', re.MULTILINE | re.DOTALL | re.I )
         match_quuux = re.compile( '.*,.*quuux.*', flags = re.I )
 
         rv = client.get( '/secure/search_tags?name=Bar&offset=0&limit=1' )
@@ -131,6 +131,29 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertTrue(
             match_quuux.match( data ),
             "Matched quuux in a case insensitive way",
+        )
+
+    def test_search_entry_log( self, client ):
+        DB.add_member( "Bar Quuux", "09876" )
+        DB.log_entry( "09876", "cleanroom.door", True, True )
+
+        match_cleanroom = re.compile( '.*,cleanroom\.door.*',
+            re.MULTILINE | re.DOTALL )
+
+        rv = client.get( '/secure/search_entry_log?tag=09876&offset=0&limit=1' )
+        data = rv.data.decode( "UTF-8" )
+        self.assertTrue(
+            match_cleanroom.match( data ),
+            "Matched RFID tag",
+        )
+
+        # Test for blank location
+        DB.log_entry( "09876", None, True, True )
+        rv = client.get( '/secure/search_entry_log' )
+        data = rv.data.decode( "UTF-8" )
+        self.assertTrue(
+            match_cleanroom.match( data ),
+            "Matched bar",
         )
 
     def test_dump_tags( self, client ):

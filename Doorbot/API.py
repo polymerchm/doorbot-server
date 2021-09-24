@@ -111,6 +111,17 @@ def search_tags():
     offset = args.get( 'offset' )
     limit = args.get( 'limit' )
 
+    offset = int( offset ) if offset else 0
+    limit = int( limit ) if limit else 0
+
+    # Clamp offset/limit
+    if offset < 0:
+        offset = 0
+    if limit < 0:
+        limit = 50
+    elif limit > 100:
+        limit = 100
+
     members = DB.search_members( name, tag, offset, limit )
 
     out = ''
@@ -125,6 +136,45 @@ def search_tags():
     response.content_type = 'text/plain'
     response.set_data( out )
     return response
+
+@app.route( "/secure/search_entry_log", methods = [ "GET" ] )
+def search_entry_log():
+    args = flask.request.args
+    response = flask.make_response()
+
+    tag = args.get( 'tag' )
+    offset = args.get( 'offset' )
+    limit = args.get( 'limit' )
+
+    offset = int( offset ) if offset else 0
+    limit = int( limit ) if limit else 0
+
+    # Clamp offset/limit
+    if offset < 0:
+        offset = 0
+    if limit <= 0:
+        limit = 50
+    elif limit > 100:
+        limit = 100
+
+    entries = DB.fetch_entries( limit, offset, tag )
+
+    out = ''
+    for entry in entries:
+        out += ','.join([
+            entry[ 'full_name' ] if entry[ 'full_name' ] else "",
+            entry[ 'rfid' ],
+            entry[ 'entry_time' ],
+            "1" if entry[ 'is_active_tag' ] else "0",
+            "1" if entry[ 'is_found_tag' ] else "0",
+            entry[ 'location' ] if entry[ 'location' ] else "",
+        ]) + "\n"
+
+    response.status = 200
+    response.content_type = 'text/plain'
+    response.set_data( out )
+    return response
+
 
 @app.route( "/secure/dump_active_tags", methods = [ "GET" ] )
 def dump_tags():
