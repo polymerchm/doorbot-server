@@ -1,3 +1,6 @@
+-- For searching text fields with a good index
+CREATE EXTENSION pg_trgm;
+
 CREATE TABLE members (
     id SERIAL PRIMARY KEY NOT NULL,
     rfid TEXT NOT NULL UNIQUE,
@@ -10,6 +13,8 @@ CREATE TABLE members (
     entry_type TEXT NOT NULL,
     notes TEXT
 );
+CREATE INDEX members_full_name_trgm_idx ON members
+    USING gist (full_name gist_trgm_ops);
 
 CREATE TABLE locations (
     id SERIAL PRIMARY KEY NOT NULL,

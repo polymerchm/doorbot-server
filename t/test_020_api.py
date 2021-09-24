@@ -109,13 +109,28 @@ class TestAPI( flask_unittest.ClientTestCase ):
         DB.add_member( "Baz Quuux", "98765" )
         DB.add_member( "Baz Quuuux", "56789" )
 
-        match_bar = re.compile( '.*,bar.*', flags = re.I )
+        match_bar = re.compile( '.*,.*bar.*', flags = re.I )
+        match_quuux = re.compile( '.*,.*quuux.*', flags = re.I )
 
         rv = client.get( '/secure/search_tags?name=Bar&offset=0&limit=1' )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
             match_bar.match( data ),
             "Matched bar",
+        )
+
+        rv = client.get( '/secure/search_tags?name=bar&offset=0&limit=1' )
+        data = rv.data.decode( "UTF-8" )
+        self.assertTrue(
+            match_bar.match( data ),
+            "Matched bar in a case insensitive way",
+        )
+
+        rv = client.get( '/secure/search_tags?name=quuux&offset=0&limit=1' )
+        data = rv.data.decode( "UTF-8" )
+        self.assertTrue(
+            match_quuux.match( data ),
+            "Matched quuux in a case insensitive way",
         )
 
     def test_dump_tags( self, client ):

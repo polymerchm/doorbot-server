@@ -13,7 +13,7 @@ INSERT_MEMBER = '''
 FETCH_MEMBER_BY_NAME = '''
     SELECT full_name, rfid, active
     FROM members
-    WHERE full_name LIKE %s
+    WHERE full_name ILIKE %s
 '''
 FETCH_MEMBER_BY_RFID = '''
     SELECT full_name, rfid, active
@@ -60,8 +60,8 @@ SQLITE_DUMP_ACTIVE_MEMBERS = '''
     SELECT rfid FROM members WHERE active = 1
 '''
 
-LOWER_NAME_SEARCH = '''
-    lower(full_name) LIKE %s
+CASE_INSENSITIVE_NAME_SEARCH = '''
+    full_name ILIKE %s
 '''
 LIMIT = '''
     LIMIT %s
@@ -93,7 +93,7 @@ def set_sqlite():
     global FETCH_ENTRIES
     global SET_MEMBER_ACTIVE_STATUS
     global DUMP_ACTIVE_MEMBERS
-    global LOWER_NAME_SEARCH
+    global CASE_INSENSITIVE_NAME_SEARCH
     global LIMIT
     global OFFSET
 
@@ -106,9 +106,18 @@ def set_sqlite():
     FETCH_ENTRIES = re.sub( placeholder_change, '?', FETCH_ENTRIES )
     SET_MEMBER_ACTIVE_STATUS = re.sub( placeholder_change, '?',
         SET_MEMBER_ACTIVE_STATUS )
-    LOWER_NAME_SEARCH = re.sub( placeholder_change, '?', LOWER_NAME_SEARCH )
+    CASE_INSENSITIVE_NAME_SEARCH = re.sub( placeholder_change, '?',
+        CASE_INSENSITIVE_NAME_SEARCH )
     LIMIT = re.sub( placeholder_change, '?', LIMIT )
     OFFSET = re.sub( placeholder_change, '?', OFFSET )
+
+    # SQLite doesn't have ILIKE, so hack around it
+    FETCH_MEMBER_BY_NAME = '''
+        SELECT full_name, rfid, active
+        FROM members
+        WHERE lower( full_name ) LIKE lower( ? )
+    '''
+    CASE_INSENSITIVE_NAME_SEARCH = 'lower( full_name ) LIKE lower( ? )'
 
 
     DUMP_ACTIVE_MEMBERS = SQLITE_DUMP_ACTIVE_MEMBERS
@@ -238,8 +247,8 @@ def search_members(
     params = []
 
     if full_name:
-        where.append( LOWER_NAME_SEARCH )
-        params.append( full_name + '%' )
+        where.append( CASE_INSENSITIVE_NAME_SEARCH )
+        params.append( '%' + full_name + '%' )
 
     if rfid:
         where.append( 'rfid = ?' )
