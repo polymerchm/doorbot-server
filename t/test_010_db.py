@@ -103,6 +103,19 @@ class TestDB( unittest.TestCase ):
         members = DB.search_members( "foo", None, 1, 5 )
         self.assertEqual( len( members ), 1, "Returned offset results" )
 
+        DB.change_tag( "1234", "4321" )
+        member = DB.fetch_member_by_rfid( "1234" )
+        self.assertEqual(
+            member,
+            None,
+            "Old fob was not found"
+        );
+        member = DB.fetch_member_by_rfid( "4321" )
+        self.assertTrue(
+            member[ 'is_active' ],
+            "New fob was found"
+        );
+
     def test_entry_log( self ):
         DB.add_member( "Bar Qux", "5678" )
         DB.log_entry( "5678", "cleanroom.door", True, True )

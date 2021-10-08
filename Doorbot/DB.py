@@ -61,6 +61,12 @@ SET_MEMBER_ACTIVE_STATUS = '''
     WHERE rfid = %s
 '''
 
+EDIT_RFID_TAG = '''
+    UPDATE members
+    SET rfid = %s
+    WHERE rfid = %s
+'''
+
 DUMP_ACTIVE_MEMBERS = '''
     SELECT rfid FROM members WHERE active = True
 '''
@@ -111,6 +117,7 @@ def set_sqlite():
     global FETCH_ENTRIES_WHERE_CLAUSE
     global FETCH_ENTRIES_END
     global SET_MEMBER_ACTIVE_STATUS
+    global EDIT_RFID_TAG
     global DUMP_ACTIVE_MEMBERS
     global CASE_INSENSITIVE_NAME_SEARCH
     global LIMIT
@@ -130,6 +137,8 @@ def set_sqlite():
     FETCH_ENTRIES_END = re.sub( placeholder_change, '?', FETCH_ENTRIES_END )
     SET_MEMBER_ACTIVE_STATUS = re.sub( placeholder_change, '?',
         SET_MEMBER_ACTIVE_STATUS )
+    EDIT_RFID_TAG = re.sub( placeholder_change, '?',
+        EDIT_RFID_TAG )
     CASE_INSENSITIVE_NAME_SEARCH = re.sub( placeholder_change, '?',
         CASE_INSENSITIVE_NAME_SEARCH )
     LIMIT = re.sub( placeholder_change, '?', LIMIT )
@@ -158,6 +167,17 @@ def add_member(
     cur.execute( INSERT_MEMBER, ( name, rfid ) )
     cur.close()
     return
+
+def change_tag(
+    current_rfid: str,
+    new_rfid: str,
+):
+    sql = conn()
+    cur = sql.cursor()
+    cur.execute( EDIT_RFID_TAG, ( new_rfid, current_rfid ) )
+    cur.close()
+    return
+
 
 def fetch_member_by_name(
     name: str,

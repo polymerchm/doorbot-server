@@ -101,6 +101,21 @@ def reactivate_tag( tag ):
     response.status = 200
     return response
 
+@app.route( "/secure/edit_tag/<current_tag>/<new_tag>", methods = [ "POST" ] )
+def edit_tag( current_tag, new_tag ):
+    response = flask.make_response()
+    if not MATCH_INT.match( current_tag ):
+        response.status = 400
+        return response
+    if not MATCH_INT.match( new_tag ):
+        response.status = 400
+        return response
+
+    DB.change_tag( current_tag, new_tag )
+    response.status = 201
+    return response
+
+
 @app.route( "/secure/search_tags", methods = [ "GET" ] )
 def search_tags():
     args = flask.request.args

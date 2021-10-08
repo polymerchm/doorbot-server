@@ -75,11 +75,11 @@ class TestAPI( flask_unittest.ClientTestCase ):
         rv = client.get( '/entry/foobar/cleanroom.door' )
         self.assertStatus( rv, 400 )
 
-    def add_tag( self, client ):
+    def test_add_tag( self, client ):
         rv = client.get( '/check_tag/9012' )
         self.assertStatus( rv, 404 )
 
-        rv = client.put( '/secure/new_tag/9012' )
+        rv = client.put( '/secure/new_tag/9012/foo' )
         self.assertStatus( rv, 201 )
 
         rv = client.get( '/check_tag/9012' )
@@ -174,6 +174,33 @@ class TestAPI( flask_unittest.ClientTestCase ):
             "12354" in data,
             "Did not fetch deactivated member",
         )
+
+    def test_edit_tag( self, client ):
+        rv = client.get( '/check_tag/09017' )
+        self.assertStatus( rv, 404 )
+
+        rv = client.get( '/check_tag/19017' )
+        self.assertStatus( rv, 404 )
+
+        # Create tag
+        rv = client.put( '/secure/new_tag/09017/foo' )
+        self.assertStatus( rv, 201 )
+
+        rv = client.get( '/check_tag/09017' )
+        self.assertStatus( rv, 200 )
+
+        rv = client.get( '/check_tag/19017' )
+        self.assertStatus( rv, 404 )
+
+        # Edit tag
+        rv = client.post( '/secure/edit_tag/09017/19017' )
+        self.assertStatus( rv, 201 )
+
+        rv = client.get( '/check_tag/09017' )
+        self.assertStatus( rv, 404 )
+
+        rv = client.get( '/check_tag/19017' )
+        self.assertStatus( rv, 200 )
 
 
 if __name__ == '__main__':
