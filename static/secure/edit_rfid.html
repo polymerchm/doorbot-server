@@ -22,10 +22,10 @@ function submit_rfid ()
     $.ajax( url, {
         "type": "POST",
         "error": function (jqXHR, str, exception) {
-            msg_div.text( "Error adding tag: " + str );
+            msg_div.text( "Error chaning tag: " + str );
         },
         "success": function (data, str, jqXHR) {
-            msg_div.text( "Added tag" );
+            msg_div.text( "Modified tag" );
         }
     });
 
