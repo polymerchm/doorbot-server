@@ -16,6 +16,7 @@ function submit_rfid ()
 {
     var current_tag = $('#current_rfid').val();
     var new_tag = $('#new_rfid').val();
+    var msg_div = $('#msg');
     var url  = "/secure/edit_tag/" + current_tag + "/" + new_tag;
 
     $.ajax( url, {
