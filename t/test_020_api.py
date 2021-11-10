@@ -202,6 +202,24 @@ class TestAPI( flask_unittest.ClientTestCase ):
         rv = client.get( '/check_tag/19017' )
         self.assertStatus( rv, 200 )
 
+    def test_edit_name( self, client ):
+        rv = client.get( '/check_tag/29017' )
+        self.assertStatus( rv, 404 )
+
+        rv = client.get( '/check_tag/29017' )
+        self.assertStatus( rv, 404 )
+
+        # Create tag
+        rv = client.put( '/secure/new_tag/29017/foo' )
+        self.assertStatus( rv, 201 )
+
+        rv = client.get( '/check_tag/29017' )
+        self.assertStatus( rv, 200 )
+
+        # Edit tag
+        rv = client.post( '/secure/edit_name/29017/bar' )
+        self.assertStatus( rv, 201 )
+
 
 if __name__ == '__main__':
     unittest.main()

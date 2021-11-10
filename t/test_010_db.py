@@ -116,6 +116,14 @@ class TestDB( unittest.TestCase ):
             "New fob was found"
         );
 
+        DB.change_name( "4321", "baz" )
+        member = DB.fetch_member_by_rfid( "4321" )
+        self.assertEqual(
+            member[ 'full_name' ],
+            "baz",
+            "Name changed"
+        );
+
     def test_entry_log( self ):
         DB.add_member( "Bar Qux", "5678" )
         DB.log_entry( "5678", "cleanroom.door", True, True )

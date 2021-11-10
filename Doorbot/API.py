@@ -115,6 +115,17 @@ def edit_tag( current_tag, new_tag ):
     response.status = 201
     return response
 
+@app.route( "/secure/edit_name/<tag>/<new_name>", methods = [ "POST" ] )
+def edit_name( tag, new_name ):
+    response = flask.make_response()
+    if not MATCH_INT.match( tag ):
+        response.status = 400
+        return response
+
+    DB.change_name( tag, new_name )
+    response.status = 201
+    return response
+
 
 @app.route( "/secure/search_tags", methods = [ "GET" ] )
 def search_tags():
