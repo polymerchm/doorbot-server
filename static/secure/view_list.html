@@ -59,16 +59,22 @@ function update_table( csv_data )
         }
         active_button = '<input type="button" value="' + active_button_text + '"'
             + ' onClick="' + active_button_action + '; get_list( 0, 0 )">';
-        edit_link = '<a href="/secure/edit_rfid.html?current_tag='
+        edit_rfid_link = '<a href="/secure/edit_rfid.html?current_tag='
             + rfid
             + '">Edit Tag</a>';
+        edit_name_link = '<a href="/secure/edit_name.html?current_tag='
+            + rfid
+            + '&current_name='
+            + name
+            + '">Edit Name</a>';
 
         tag_table.append( '<tr class="row_data">'
             + "<td>" + name   + "</td>"
             + "<td>" + rfid   + "</td>"
             + "<td>" + active + "</td>"
             + '<td>' + active_button + '</td>'
-            + '<td>' + edit_link + '</td>'
+            + '<td>' + edit_rfid_link + '</td>'
+            + '<td>' + edit_name_link + '</td>'
             + "</tr>"
         );
     });
@@ -130,6 +136,7 @@ function reactivate_tag( rfid )
         <th>Name</th>
         <th>RFID Tag</th>
         <th>Active</th>
+        <th>&nbsp;</th>
         <th>&nbsp;</th>
         <th>&nbsp;</th>
     </tr>
