@@ -2,6 +2,7 @@
 import requests
 import Doorbot.Config
 
+
 conf = Doorbot.Config.get( 'memberpress' )
 user = conf[ 'user' ]
 passwd = conf[ 'passwd' ]
@@ -24,7 +25,6 @@ def fetch_member_page(
     if 200 == response.status_code:
         data = response.json()
         return data
-
 
 def fetch_all_members():
     is_still_more = True
@@ -49,6 +49,30 @@ def fetch_all_members():
         page += 1
 
     print( f'Fetched {len( all_members )} members' )
+    return all_members
+
+def is_active_member( member ):
+    member_email = member[ 'email' ]
+    member_id = member[ 'id' ]
+
+    if len( member[ 'active_memberships' ] ) == 0:
+        print( f'{member_email} (id {member_id}) is not active, skipping' )
+        return False
+    if member[ 'profile' ][ 'mepr_keyfob_id' ] == "":
+        print( f'{member_email} (id {member_id}) has no keyfob, skipping' )
+        return False
+    if member[ 'profile' ][ 'mepr_keyfob_id' ] == "0000000000":
+        print( f'{member_email} (id {member_id}) has default keyfob, skipping' )
+        return False
+
+    print( f'{member_email} (id {member_id}) is active' )
+    return True
 
 
-fetch_all_members()
+members = fetch_all_members()
+print( "Filtering members" )
+active_members = list( filter(
+    is_active_member,
+    members,
+) )
+print( f'Count {len( active_members )} active members' )
