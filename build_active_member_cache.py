@@ -51,17 +51,37 @@ def fetch_all_members():
     print( f'Fetched {len( all_members )} members' )
     return all_members
 
+def map_members_by_rfid( members ):
+    by_rfid = {}
+    for member in members:
+        rfid = member[ 'profile' ][ 'mepr_keyfob_id' ]
+        mms_id = member[ 'id' ]
+        display_name = member[ 'display_name' ]
+        email = member[ 'email' ]
+        active_memberships = member[ 'active_memberships' ]
+
+        by_rfid[ rfid ] = {
+            'mms_id': mms_id,
+            'display_name': display_name,
+            'email': email,
+            'active_memberships': active_memberships,
+            'rfid': rfid,
+        }
+
+    return by_rfid
+
+
 def is_active_member( member ):
     member_email = member[ 'email' ]
-    member_id = member[ 'id' ]
+    member_id = member[ 'mms_id' ]
 
     if len( member[ 'active_memberships' ] ) == 0:
         print( f'{member_email} (id {member_id}) is not active, skipping' )
         return False
-    if member[ 'profile' ][ 'mepr_keyfob_id' ] == "":
+    if member[ 'rfid' ] == "":
         print( f'{member_email} (id {member_id}) has no keyfob, skipping' )
         return False
-    if member[ 'profile' ][ 'mepr_keyfob_id' ] == "0000000000":
+    if member[ 'rfid' ] == "0000000000":
         print( f'{member_email} (id {member_id}) has default keyfob, skipping' )
         return False
 
@@ -70,9 +90,10 @@ def is_active_member( member ):
 
 
 members = fetch_all_members()
+members_by_rfid = map_members_by_rfid( members )
 print( "Filtering members" )
 active_members = list( filter(
     is_active_member,
-    members,
+    members_by_rfid.values(),
 ) )
 print( f'Count {len( active_members )} active members' )
