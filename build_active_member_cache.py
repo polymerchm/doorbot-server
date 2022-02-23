@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import requests
 import Doorbot.Config
+import psycopg2
 
 
 conf = Doorbot.Config.get( 'memberpress' )
@@ -88,12 +89,46 @@ def is_active_member( member ):
     print( f'{member_email} (id {member_id}) is active' )
     return True
 
+def db_connect():
+    pg_conf = Doorbot.Config.get( 'postgresql' )
+    user = pg_conf[ 'username' ]
+    passwd = pg_conf[ 'passwd' ]
+    database = pg_conf[ 'database' ]
+
+    conn_str = ' '.join([
+        'dbname=' + database,
+        'user=' + user,
+        'password=' + passwd,
+    ])
+    conn = psycopg2.connect( conn_str )
+    conn.set_session( autocommit = True )
+    return conn
+
+def fetch_members_db( db ):
+    cur = db.cursor()
+    cur.execute( "SELECT rfid, full_name, active FROM members" )
+    rows = cur.fetchall()
+    cur.close()
+
+    results = {}
+    for member in rows:
+        rfid = member[0]
+        name = member[1]
+        active = member[2]
+
+        results[ rfid ] = {
+            'rfid': rfid,
+            'display_name': name,
+            'is_active_tag': True if active else False,
+        }
+
+    return results
+
 
 members = fetch_all_members()
 members_by_rfid = map_members_by_rfid( members )
-print( "Filtering members" )
-active_members = list( filter(
-    is_active_member,
-    members_by_rfid.values(),
-) )
-print( f'Count {len( active_members )} active members' )
+
+db = db_connect()
+db_members_by_rfid = fetch_members_db( db )
+
+print( f'Count {len( members )} members in MMS, {len( db_members_by_rfid.keys() )} in DB' )
