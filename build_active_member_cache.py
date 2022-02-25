@@ -61,6 +61,9 @@ def map_members_by_rfid( members ):
         email = member[ 'email' ]
         active_memberships = member[ 'active_memberships' ]
 
+        # Pad RFID tags with leading zeros
+        rfid = rfid.zfill( 10 )
+
         by_rfid[ rfid ] = {
             'mms_id': mms_id,
             'display_name': display_name,
@@ -68,6 +71,8 @@ def map_members_by_rfid( members ):
             'active_memberships': active_memberships,
             'rfid': rfid,
         }
+        by_rfid[ rfid ][ "is_active_tag" ] = is_active_member(
+            by_rfid[ rfid ] )
 
     return by_rfid
 
@@ -77,16 +82,12 @@ def is_active_member( member ):
     member_id = member[ 'mms_id' ]
 
     if len( member[ 'active_memberships' ] ) == 0:
-        print( f'{member_email} (id {member_id}) is not active, skipping' )
         return False
     if member[ 'rfid' ] == "":
-        print( f'{member_email} (id {member_id}) has no keyfob, skipping' )
         return False
     if member[ 'rfid' ] == "0000000000":
-        print( f'{member_email} (id {member_id}) has default keyfob, skipping' )
         return False
 
-    print( f'{member_email} (id {member_id}) is active' )
     return True
 
 def db_connect():
@@ -124,6 +125,19 @@ def fetch_members_db( db ):
 
     return results
 
+def iterate_members( db_members, mms_members ):
+    db_members_filtered = db_members.copy()
+    mms_members_filtered = mms_members.copy()
+
+    for mms_member in mms_members.values():
+        rfid = mms_member[ "rfid" ]
+        if rfid in db_members_filtered:
+            if mms_member[ "is_active_tag" ] == db_members_filtered[ rfid ][ "is_active_tag" ]:
+                print( f'{rfid} matches, do nothing' )
+            else:
+                print( f'{rfid} is {mms_member[ "is_active_tag" ]} in MMS, but {db_members_filtered[ rfid ][ "is_active_tag" ]} in DB, rectify' )
+        else:
+            print( f'{rfid} is in MMS, but not DB, add' )
 
 members = fetch_all_members()
 members_by_rfid = map_members_by_rfid( members )
@@ -131,4 +145,5 @@ members_by_rfid = map_members_by_rfid( members )
 db = db_connect()
 db_members_by_rfid = fetch_members_db( db )
 
+iterate_members( db_members_by_rfid, members_by_rfid )
 print( f'Count {len( members )} members in MMS, {len( db_members_by_rfid.keys() )} in DB' )
