@@ -4,6 +4,8 @@ import Doorbot.Config
 import psycopg2
 
 
+DEFAULT_RFID = "0000000000"
+
 conf = Doorbot.Config.get( 'memberpress' )
 user = conf[ 'user' ]
 passwd = conf[ 'passwd' ]
@@ -54,6 +56,7 @@ def fetch_all_members():
 
 def map_members_by_rfid( members ):
     by_rfid = {}
+    zero_rfid = []
     for member in members:
         rfid = member[ 'profile' ][ 'mepr_keyfob_id' ]
         mms_id = member[ 'id' ]
@@ -64,17 +67,21 @@ def map_members_by_rfid( members ):
         # Pad RFID tags with leading zeros
         rfid = rfid.zfill( 10 )
 
-        by_rfid[ rfid ] = {
+        entry = {
             'mms_id': mms_id,
             'display_name': display_name,
             'email': email,
             'active_memberships': active_memberships,
             'rfid': rfid,
         }
-        by_rfid[ rfid ][ "is_active_tag" ] = is_active_member(
-            by_rfid[ rfid ] )
+        entry[ 'is_active_tag' ] = is_active_member( entry )
 
-    return by_rfid
+        if DEFAULT_RFID == rfid:
+            zero_rfid.append( entry )
+        else:
+            by_rfid[ rfid ] = entry
+
+    return by_rfid, zero_rfid
 
 
 def is_active_member( member ):
@@ -125,25 +132,40 @@ def fetch_members_db( db ):
 
     return results
 
+def dump_zero_rfid_members( members ):
+    for member in members:
+        mms_id = member[ 'mms_id' ]
+        name = member[ 'display_name' ]
+        print( f'MMS Member ID #{mms_id} |{name}| has zero\'d out RFID' )
+
 def iterate_members( db_members, mms_members ):
     db_members_filtered = db_members.copy()
     mms_members_filtered = mms_members.copy()
 
     for mms_member in mms_members.values():
         rfid = mms_member[ "rfid" ]
+        name_mms = mms_member[ "display_name" ]
+        is_active_mms = mms_member[ "is_active_tag" ]
+
         if rfid in db_members_filtered:
-            if mms_member[ "is_active_tag" ] == db_members_filtered[ rfid ][ "is_active_tag" ]:
-                print( f'{rfid} matches, do nothing' )
+            if is_active_mms == db_members_filtered[ rfid ][ "is_active_tag" ]:
+                name_db = db_members_filtered[ rfid ][ "display_name" ]
+                if name_mms != name_db:
+                    print( f'{rfid} is named |{name_mms}| in MMS, but |{name_db}| in DB, rectify' )
+                else:
+                    print( f'{rfid} matches, do nothing' )
+
             else:
-                print( f'{rfid} is {mms_member[ "is_active_tag" ]} in MMS, but {db_members_filtered[ rfid ][ "is_active_tag" ]} in DB, rectify' )
+                print( f'{rfid} |{name_mms}| is {is_active_mms} in MMS, but {db_members_filtered[ rfid ][ "is_active_tag" ]} in DB, rectify' )
         else:
-            print( f'{rfid} is in MMS, but not DB, add' )
+            print( f'{rfid} |{name_mms}| is in MMS, but not DB, add' )
 
 members = fetch_all_members()
-members_by_rfid = map_members_by_rfid( members )
+members_by_rfid, zero_rfid_members = map_members_by_rfid( members )
 
 db = db_connect()
 db_members_by_rfid = fetch_members_db( db )
 
+dump_zero_rfid_members( zero_rfid_members )
 iterate_members( db_members_by_rfid, members_by_rfid )
 print( f'Count {len( members )} members in MMS, {len( db_members_by_rfid.keys() )} in DB' )
