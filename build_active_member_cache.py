@@ -132,33 +132,76 @@ def fetch_members_db( db ):
 
     return results
 
-def dump_zero_rfid_members( members ):
-    for member in members:
-        mms_id = member[ 'mms_id' ]
-        name = member[ 'display_name' ]
-        print( f'MMS Member ID #{mms_id} |{name}| has zero\'d out RFID' )
-
-def iterate_members( db_members, mms_members ):
+def filter_members( db_members, mms_members ):
     db_members_filtered = db_members.copy()
     mms_members_filtered = mms_members.copy()
+
+    clear_members = []
+    wrong_name_members = []
+    wrong_active_members = []
+    add_to_db_members = []
 
     for mms_member in mms_members.values():
         rfid = mms_member[ "rfid" ]
         name_mms = mms_member[ "display_name" ]
         is_active_mms = mms_member[ "is_active_tag" ]
 
-        if rfid in db_members_filtered:
-            if is_active_mms == db_members_filtered[ rfid ][ "is_active_tag" ]:
-                name_db = db_members_filtered[ rfid ][ "display_name" ]
-                if name_mms != name_db:
-                    print( f'{rfid} is named |{name_mms}| in MMS, but |{name_db}| in DB, rectify' )
-                else:
-                    print( f'{rfid} matches, do nothing' )
-
-            else:
-                print( f'{rfid} |{name_mms}| is {is_active_mms} in MMS, but {db_members_filtered[ rfid ][ "is_active_tag" ]} in DB, rectify' )
+        if not rfid in db_members_filtered:
+            add_to_db_members.append({
+                'mms': mms_member,
+                'db': None,
+            })
         else:
-            print( f'{rfid} |{name_mms}| is in MMS, but not DB, add' )
+            db_member = db_members_filtered[ rfid ]
+            entry = {
+                'mms': mms_member,
+                'db': db_member,
+            }
+
+            if is_active_mms != db_member[ "is_active_tag" ]:
+                wrong_active_members.append( entry )
+            else:
+                name_db = db_members_filtered[ rfid ][ "display_name" ]
+                if name_mms == name_db:
+                    clear_members.append( entry )
+                else:
+                    wrong_name_members.append( entry )
+    # TODO members in DB, but not MMS
+    return clear_members, wrong_name_members, wrong_active_members, add_to_db_members
+
+def handle_clear_members( members ):
+    for member in members:
+        rfid = member[ 'mms' ][ 'rfid' ]
+        print( f'{rfid} matches, do nothing' )
+
+def handle_zero_rfid_members( members ):
+    for member in members:
+        mms_id = member[ 'mms_id' ]
+        name = member[ 'display_name' ]
+        print( f'MMS Member ID #{mms_id} |{name}| has zero\'d out RFID' )
+
+def handle_wrong_name_members( members ):
+    for member in members:
+        rfid = member[ 'mms' ][ 'rfid' ]
+        name_mms = member[ 'mms' ][ 'display_name' ]
+        name_db = member[ 'db' ][ 'display_name' ]
+        print( f'{rfid} is named |{name_mms}| in MMS, but |{name_db}| in DB, rectify' )
+
+def handle_wrong_active_members( members ):
+    for member in members:
+        rfid = member[ 'mms' ][ 'rfid' ]
+        name_mms = member[ 'mms' ][ 'display_name' ]
+        is_active_mms = member[ 'mms' ][ 'is_active_tag' ]
+        is_active_db = member[ 'db' ][ 'is_active_tag' ]
+        print( f'{rfid} |{name_mms}| is {is_active_mms} in MMS, but {is_active_db} in DB, rectify' )
+
+
+def handle_add_to_db_members( members ):
+    for member in members:
+        rfid = member[ 'mms' ][ 'rfid' ]
+        name_mms = member[ 'mms' ][ 'display_name' ]
+        print( f'{rfid} |{name_mms}| is in MMS, but not DB, add' )
+
 
 members = fetch_all_members()
 members_by_rfid, zero_rfid_members = map_members_by_rfid( members )
@@ -166,6 +209,11 @@ members_by_rfid, zero_rfid_members = map_members_by_rfid( members )
 db = db_connect()
 db_members_by_rfid = fetch_members_db( db )
 
-dump_zero_rfid_members( zero_rfid_members )
-iterate_members( db_members_by_rfid, members_by_rfid )
+clear_members, wrong_name_members, wrong_active_members, add_to_db_members = filter_members( db_members_by_rfid, members_by_rfid )
+
+handle_clear_members( clear_members )
+handle_zero_rfid_members( zero_rfid_members )
+handle_wrong_name_members( wrong_name_members )
+handle_wrong_active_members( wrong_active_members )
+handle_add_to_db_members( add_to_db_members )
 print( f'Count {len( members )} members in MMS, {len( db_members_by_rfid.keys() )} in DB' )
