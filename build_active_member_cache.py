@@ -60,7 +60,8 @@ def map_members_by_rfid( members ):
     for member in members:
         rfid = member[ 'profile' ][ 'mepr_keyfob_id' ]
         mms_id = member[ 'id' ]
-        display_name = member[ 'display_name' ]
+        first_name = member[ 'first_name' ]
+        last_name = member[ 'last_name' ]
         email = member[ 'email' ]
         active_memberships = member[ 'active_memberships' ]
 
@@ -69,7 +70,7 @@ def map_members_by_rfid( members ):
 
         entry = {
             'mms_id': mms_id,
-            'display_name': display_name,
+            'display_name': first_name + " " + last_name,
             'email': email,
             'active_memberships': active_memberships,
             'rfid': rfid,
@@ -217,10 +218,10 @@ def handle_add_to_mms_members( members ):
 
 
 
+db = db_connect()
 members = fetch_all_members()
 members_by_rfid, zero_rfid_members = map_members_by_rfid( members )
 
-db = db_connect()
 db_members_by_rfid = fetch_members_db( db )
 
 clear_members, wrong_name_members, wrong_active_members, add_to_db_members, add_to_mms_members = filter_members( db_members_by_rfid, members_by_rfid )
