@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 import requests
 import Doorbot.Config
+import Doorbot.DB as DB
 import psycopg2
 
 
@@ -188,12 +189,13 @@ def handle_zero_rfid_members( members ):
         name = member[ 'display_name' ]
         print( f'MMS Member ID #{mms_id} |{name}| has zero\'d out RFID' )
 
-def handle_wrong_name_members( members ):
+def handle_wrong_name_members( members, db ):
     for member in members:
         rfid = member[ 'mms' ][ 'rfid' ]
         name_mms = member[ 'mms' ][ 'display_name' ]
         name_db = member[ 'db' ][ 'display_name' ]
         print( f'{rfid} is named |{name_mms}| in MMS, but |{name_db}| in DB, rectify' )
+        db.change_name( rfid, name_mms )
 
 def handle_wrong_active_members( members ):
     for member in members:
@@ -219,6 +221,8 @@ def handle_add_to_mms_members( members ):
 
 
 db = db_connect()
+DB.set_db( db )
+
 members = fetch_all_members()
 members_by_rfid, zero_rfid_members = map_members_by_rfid( members )
 
@@ -228,7 +232,7 @@ clear_members, wrong_name_members, wrong_active_members, add_to_db_members, add_
 
 handle_clear_members( clear_members )
 handle_zero_rfid_members( zero_rfid_members )
-handle_wrong_name_members( wrong_name_members )
+handle_wrong_name_members( wrong_name_members, db )
 handle_wrong_active_members( wrong_active_members )
 handle_add_to_db_members( add_to_db_members )
 handle_add_to_mms_members( add_to_mms_members )
