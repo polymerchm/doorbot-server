@@ -78,7 +78,8 @@ function update_table( csv_data )
             + "<td>" + rfid   + "</td>"
             + "<td>" + active + "</td>"
             + ( ( mms_link != null )
-                ? '<td><a href="' + mms_link + '">' + mms_id + "</a></td>"
+                ? '<td><a href="' + mms_link + '" target="_blank">'
+                    + mms_id + "</a></td>"
                 : "<td>&nbsp;</td>" )
             + '<td>' + active_button + '</td>'
             + '<td>' + edit_rfid_link + '</td>'
