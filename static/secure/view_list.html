@@ -46,6 +46,11 @@ function update_table( csv_data )
         var rfid   = row_data[0];
         var name   = row_data[1];
         var active = row_data[2];
+        var mms_id = row_data[3];
+
+        var mms_link = (mms_id != null)
+            ? "https://mms.thebodgery.org/wp-admin/user-edit.php?user_id=" + mms_id
+            : null;
 
         var active_button_text;
         var active_button_action;
@@ -72,6 +77,9 @@ function update_table( csv_data )
             + "<td>" + name   + "</td>"
             + "<td>" + rfid   + "</td>"
             + "<td>" + active + "</td>"
+            + ( ( mms_link != null )
+                ? '<td><a href="' + mms_link + '">" + mms_id + "</a></td>"
+                : "<td>&nbsp;</td>" )
             + '<td>' + active_button + '</td>'
             + '<td>' + edit_rfid_link + '</td>'
             + '<td>' + edit_name_link + '</td>'
@@ -136,6 +144,7 @@ function reactivate_tag( rfid )
         <th>Name</th>
         <th>RFID Tag</th>
         <th>Active</th>
+        <th>MMS ID</th>
         <th>&nbsp;</th>
         <th>&nbsp;</th>
         <th>&nbsp;</th>

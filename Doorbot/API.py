@@ -156,6 +156,7 @@ def search_tags():
             member[ 'rfid' ],
             member[ 'full_name' ],
             "1" if member[ 'active' ] else "0",
+            member[ 'mms_id' ] if  member[ 'mms_id' ] else "",
         ]) + "\n"
 
     response.status = 200

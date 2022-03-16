@@ -313,6 +313,7 @@ def _map_search_members( entry ):
         'rfid': entry[0],
         'full_name': entry[1],
         'active': True if entry[2] else False,
+        'mms_id': entry[3],
     }
     return result
 
@@ -348,7 +349,7 @@ def search_members(
 
 
     statements = [
-        'SELECT rfid, full_name, active FROM members'
+        'SELECT rfid, full_name, active, mms_id FROM members'
     ]
     if where:
         statements.append( 'WHERE' )
