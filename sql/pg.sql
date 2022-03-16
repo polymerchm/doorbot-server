@@ -32,7 +32,7 @@ CREATE TABLE entry_log (
     -- This could be some random RFID tag, which we may not have in our 
     -- database.  So don't reference tags in bodgery_rfid directly.
     rfid            TEXT NOT NULL,
-    entry_time      TIMESTAMP NOT NULL DEFAULT NOW(),
+    entry_time      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     is_active_tag   BOOLEAN NOT NULL,
     is_found_tag    BOOLEAN NOT NULL,
     location        INT REFERENCES locations (id)
