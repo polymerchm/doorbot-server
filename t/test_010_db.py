@@ -39,6 +39,7 @@ class TestDB( unittest.TestCase ):
     def test_member( self ):
         DB.add_member( "Foo Bar", "1234" )
         DB.add_member( "Fooo Bar", "12345" )
+        DB.add_member( "Qux Bar", "123456", "111" )
         self.assertTrue( True, "Added member" )
 
         member = DB.fetch_member_by_name( "Foo Bar" )
@@ -71,6 +72,13 @@ class TestDB( unittest.TestCase ):
             member,
             None,
             "No member found for name",
+        )
+
+        member = DB.fetch_member_by_name( "Qux Bar" )
+        self.assertEqual(
+            member[ 'mms_id' ],
+            "111",
+            "Member set with MMS ID",
         )
 
         member = DB.fetch_member_by_rfid( "4321" )

@@ -3,8 +3,9 @@ CREATE EXTENSION pg_trgm;
 
 CREATE TABLE members (
     id SERIAL PRIMARY KEY NOT NULL,
-    rfid TEXT NOT NULL UNIQUE,
+    rfid TEXT UNIQUE,
     active BOOLEAN NOT NULL DEFAULT TRUE,
+    mms_id TEXT UNIQUE,
     full_name TEXT NOT NULL,
     join_date DATE NOT NULL DEFAULT NOW(),
     end_date DATE,

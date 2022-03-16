@@ -104,13 +104,20 @@ def db_connect():
     user = pg_conf[ 'username' ]
     passwd = pg_conf[ 'passwd' ]
     database = pg_conf[ 'database' ]
+    host = pg_conf[ 'host' ]
+    port = pg_conf[ 'port' ]
 
     conn_str = ' '.join([
         'dbname=' + database,
         'user=' + user,
         'password=' + passwd,
+        #'host=' + host,
+        #'port=' + str( port ),
     ])
+
+    print( 'Connecting to database . . .' )
     conn = psycopg2.connect( conn_str )
+    print( 'Finished connecting to databse' )
     conn.set_session( autocommit = True )
     return conn
 
@@ -195,7 +202,7 @@ def handle_wrong_name_members( members, db ):
         name_mms = member[ 'mms' ][ 'display_name' ]
         name_db = member[ 'db' ][ 'display_name' ]
         print( f'{rfid} is named |{name_mms}| in MMS, but |{name_db}| in DB, rectify' )
-        db.change_name( rfid, name_mms )
+        DB.change_name( rfid, name_mms )
 
 def handle_wrong_active_members( members ):
     for member in members:
@@ -210,7 +217,9 @@ def handle_add_to_db_members( members ):
     for member in members:
         rfid = member[ 'mms' ][ 'rfid' ]
         name_mms = member[ 'mms' ][ 'display_name' ]
+        mms_id = member[ 'mms' ][ 'mms_id' ]
         print( f'{rfid} |{name_mms}| is in MMS, but not DB, add' )
+        DB.add_member( name_mms, rfid, mms_id )
 
 def handle_add_to_mms_members( members ):
     for member in members:

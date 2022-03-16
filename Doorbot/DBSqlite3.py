@@ -3,8 +3,9 @@ import Doorbot.DB as DB
 TABLES = [
     '''CREATE TABLE members (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        rfid TEXT NOT NULL UNIQUE,
+        rfid TEXT UNIQUE,
         active BOOLEAN NOT NULL DEFAULT TRUE,
+        mms_id TEXT UNIQUE,
         full_name TEXT NOT NULL,
         join_date DATE NOT NULL DEFAULT CURRENT_TIMESTAMP,
         end_date DATE,

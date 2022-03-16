@@ -6,17 +6,17 @@ CONN = None
 
 INSERT_MEMBER = '''
     INSERT INTO members
-        (full_name, rfid, phone, email, entry_type)
+        (full_name, rfid, phone, email, entry_type, mms_id)
     VALUES
-        (%s, %s, '', '', '')
+        (%s, %s, '', '', '', %s)
 '''
 FETCH_MEMBER_BY_NAME = '''
-    SELECT full_name, rfid, active
+    SELECT full_name, rfid, active, mms_id
     FROM members
     WHERE full_name ILIKE %s
 '''
 FETCH_MEMBER_BY_RFID = '''
-    SELECT full_name, rfid, active
+    SELECT full_name, rfid, active, mms_id
     FROM members
     WHERE rfid = %s
 '''
@@ -155,7 +155,7 @@ def set_sqlite():
 
     # SQLite doesn't have ILIKE, so hack around it
     FETCH_MEMBER_BY_NAME = '''
-        SELECT full_name, rfid, active
+        SELECT full_name, rfid, active, mms_id
         FROM members
         WHERE lower( full_name ) LIKE lower( ? )
     '''
@@ -170,10 +170,11 @@ def set_sqlite():
 def add_member(
     name: str,
     rfid: str,
+    mms_id: str = None,
 ):
     sql = conn()
     cur = sql.cursor()
-    cur.execute( INSERT_MEMBER, ( name, rfid ) )
+    cur.execute( INSERT_MEMBER, ( name, rfid, mms_id ) )
     cur.close()
     return
 
@@ -216,6 +217,7 @@ def fetch_member_by_name(
             'full_name': row[0],
             'rfid': row[1],
             'is_active': True if row[2] else False,
+            'mms_id': row[3],
         }
         return member
 
@@ -235,6 +237,7 @@ def fetch_member_by_rfid(
             'full_name': row[0],
             'rfid': row[1],
             'is_active': True if row[2] else False,
+            'mms_id': row[3],
         }
         return member
 
