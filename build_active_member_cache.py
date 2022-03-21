@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import requests
+import json
 import Doorbot.Config
 import Doorbot.DB as DB
 import psycopg2
@@ -197,60 +198,82 @@ def filter_members( db_members, mms_members ):
     return clear_members, wrong_name_members, wrong_active_members, add_to_db_members, add_to_mms_members, no_mms_id_in_db_members
 
 def handle_clear_members( members ):
-    for member in members:
-        rfid = member[ 'mms' ][ 'rfid' ]
-        print( f'{rfid} matches, do nothing' )
+    clear_members = map(
+        lambda _ : { 'rfid': _[ 'mms' ][ 'rfid' ] },
+        members,
+    )
+    return list( clear_members )
 
 def handle_zero_rfid_members( members ):
-    for member in members:
-        mms_id = member[ 'mms_id' ]
-        name = member[ 'display_name' ]
-        print( f'MMS Member ID #{mms_id} |{name}| has zero\'d out RFID' )
+    zerod_members = map(
+        lambda _ : {
+            'mms_id': _[ 'mms_id' ],
+            'display_name': _[ 'display_name' ],
+        },
+        members,
+    )
+    return list( zerod_members )
 
-def handle_wrong_name_members( members, db ):
-    for member in members:
-        rfid = member[ 'mms' ][ 'rfid' ]
-        name_mms = member[ 'mms' ][ 'display_name' ]
-        name_db = member[ 'db' ][ 'display_name' ]
-        print( f'{rfid} is named |{name_mms}| in MMS, but |{name_db}| in DB, rectify' )
-        DB.change_name( rfid, name_mms )
+def handle_wrong_name_members( members ):
+    wrong_name_members = map(
+        lambda _ : {
+            'rfid': _[ 'mms' ][ 'rfid' ],
+            'name_mms': _[ 'mms' ][ 'display_name' ],
+            'name_db': _[ 'db' ][ 'display_name' ],
+        },
+        members,
+    )
+    return list( wrong_name_members )
 
 def handle_wrong_active_members( members ):
-    for member in members:
-        rfid = member[ 'mms' ][ 'rfid' ]
-        name_mms = member[ 'mms' ][ 'display_name' ]
-        is_active_mms = member[ 'mms' ][ 'is_active_tag' ]
-        is_active_db = member[ 'db' ][ 'is_active_tag' ]
-        print( f'{rfid} |{name_mms}| is {is_active_mms} in MMS, but {is_active_db} in DB, rectify' )
-
+    wrong_active_members = map(
+        lambda _ : {
+            'rfid': _[ 'mms' ][ 'rfid' ],
+            'name_mms': _[ 'mms' ][ 'display_name' ],
+            'is_active_mms': _[ 'mms' ][ 'is_active_tag' ],
+            'is_active_db': _[ 'db' ][ 'is_active_tag' ],
+        },
+        members,
+    )
+    return list( wrong_active_members )
 
 def handle_add_to_db_members( members ):
-    for member in members:
-        rfid = member[ 'mms' ][ 'rfid' ]
-        name_mms = member[ 'mms' ][ 'display_name' ]
-        mms_id = member[ 'mms' ][ 'mms_id' ]
-        print( f'{rfid} |{name_mms}| is in MMS, but not DB, add' )
-        DB.add_member( name_mms, rfid, mms_id )
+    add_to_db_members = map(
+        lambda _ : {
+            'rfid': _[ 'mms' ][ 'rfid' ],
+            'name_mms': _[ 'mms' ][ 'display_name' ],
+            'mms_id': _[ 'mms' ][ 'mms_id' ]
+        },
+        members,
+    )
+    return list( add_to_db_members )
 
 def handle_add_to_mms_members( members ):
-    for member in members:
-        rfid = member[ 'db' ][ 'rfid' ]
-        name_db = member[ 'db' ][ 'display_name' ]
-        #print( f'{rfid} |{name_db}| is in DB, but not MMS, add' )
+    add_to_mms_members = map(
+        lambda _ : {
+            'rfid': _[ 'db' ][ 'rfid' ],
+            'name_db': _[ 'db' ][ 'display_name' ],
+        },
+        members,
+    )
+    return list( add_to_mms_members )
 
 def handle_no_mms_id_in_db_members( members ):
-    for member in members:
-        rfid = member[ 'db' ][ 'rfid' ]
-        mms_id = member[ 'mms' ][ 'mms_id' ]
-        name_db = member[ 'db' ][ 'display_name' ]
-        print( f'{rfid} |{name_db}| |{mms_id}| does not have MMS ID in database, add' )
-
-        cur = db.cursor()
-        cur.execute(
-            "UPDATE members SET mms_id = %s WHERE rfid = %s",
-            ( mms_id, rfid ),
-        )
-        cur.close()
+    no_mms_id_in_db_members = map(
+        lambda _ : {
+            'rfid': member[ 'db' ][ 'rfid' ],
+            'mms_id': member[ 'mms' ][ 'mms_id' ],
+            'name_db': member[ 'db' ][ 'display_name' ],
+        },
+        members,
+    )
+    return list( no_mms_id_in_db_members )
+        #cur = db.cursor()
+        #cur.execute(
+        #    "UPDATE members SET mms_id = %s WHERE rfid = %s",
+        #    ( mms_id, rfid ),
+        #)
+        #cur.close()
 
 
 
@@ -264,11 +287,13 @@ db_members_by_rfid = fetch_members_db( db )
 
 clear_members, wrong_name_members, wrong_active_members, add_to_db_members, add_to_mms_members, no_mms_id_in_db_members = filter_members( db_members_by_rfid, members_by_rfid )
 
-handle_clear_members( clear_members )
-handle_zero_rfid_members( zero_rfid_members )
-handle_wrong_name_members( wrong_name_members, db )
-handle_wrong_active_members( wrong_active_members )
-handle_add_to_db_members( add_to_db_members )
-handle_add_to_mms_members( add_to_mms_members )
-handle_no_mms_id_in_db_members( no_mms_id_in_db_members )
-print( f'Count {len( members )} members in MMS, {len( db_members_by_rfid.keys() )} in DB' )
+formatted_members = {
+    'clear_members': handle_clear_members( clear_members ),
+    'zerod_members': handle_zero_rfid_members( zero_rfid_members ),
+    'wrong_name_members': handle_wrong_name_members( wrong_name_members ),
+    'wrong_active_members': handle_wrong_active_members( wrong_active_members ),
+    'add_to_db_members': handle_add_to_db_members( add_to_db_members ),
+    'add_to_mms_members': handle_add_to_mms_members( add_to_mms_members ),
+    'no_mms_id_in_db_members': handle_no_mms_id_in_db_members( no_mms_id_in_db_members ),
+}
+print( json.dumps( formatted_members ) )
