@@ -39,21 +39,18 @@ def fetch_all_members():
 
     while is_still_more:
         members = fetch_member_page( page, per_page )
-        print( f'Fetched {len( members )} members' )
 
         if len( members ) != per_page:
             # If we didn't get as many members as expected, assume we've 
             # reached the end of the list. Unfortunately, the MemberPress
             # API doesn't have any other way for us to know this.
             is_still_more = False
-            print( f'Reached the end of the member list on page {page}' )
 
         if len( members ) != 0:
             all_members = all_members +  members
 
         page += 1
 
-    print( f'Fetched {len( all_members )} members' )
     return all_members
 
 def map_members_by_rfid( members ):
@@ -116,9 +113,7 @@ def db_connect():
         #'port=' + str( port ),
     ])
 
-    print( 'Connecting to database . . .' )
     conn = psycopg2.connect( conn_str )
-    print( 'Finished connecting to databse' )
     conn.set_session( autocommit = True )
     return conn
 
