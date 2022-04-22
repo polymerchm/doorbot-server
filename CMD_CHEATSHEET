@@ -1,4 +1,8 @@
 Fix wrong names:
     python3 build_active_member_cache.py | python3 filter.py --wrong-name | python3 fix_wrong_name.py
 
+Fix wrong active status:
+    python3 build_active_member_cache.py | python3 filter.py --wrong-active | python3 fix_wrong_active.py
 
+Add new members into DB:
+    python3 build_active_member_cache.py | python3 filter.py --add-to-db | python3 add_members_to_db.py
