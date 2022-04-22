@@ -1,6 +1,7 @@
 import psycopg2
 import re
 import sqlite3
+import Doorbot.Config
 
 CONN = None
 
@@ -100,6 +101,26 @@ def _pg_datetime_convert( dt ):
 
 def _sqlite_datetime_convert( dt ):
     return dt
+
+def db_connect():
+    pg_conf = Doorbot.Config.get( 'postgresql' )
+    user = pg_conf[ 'username' ]
+    passwd = pg_conf[ 'passwd' ]
+    database = pg_conf[ 'database' ]
+    host = pg_conf[ 'host' ]
+    port = pg_conf[ 'port' ]
+
+    conn_str = ' '.join([
+        'dbname=' + database,
+        'user=' + user,
+        'password=' + passwd,
+        #'host=' + host,
+        #'port=' + str( port ),
+    ])
+
+    conn = psycopg2.connect( conn_str )
+    conn.set_session( autocommit = True )
+    return conn
 
 def set_db( conn ):
     global CONN
