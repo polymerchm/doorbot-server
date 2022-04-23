@@ -5,14 +5,26 @@
 <script type="text/javascript">
 var tag_table;
 var msg_div;
+var time_element;
 
+var UPDATE_TIME_MS = 1000;
 var ROW_LIMIT = 100;
 var last_row_loaded = 0;
+
+function update_time()
+{
+    var utc_time = new Date().toISOString();
+    time_element.text( utc_time );
+}
+
 
 $( document ).ready(function () {
     tag_table = $( "#tag_table" );
     msg_div   = $( "#msg" );
+    time_element = $( "#current_time" );
+
     get_list( 0, ROW_LIMIT );
+    setInterval( update_time, UPDATE_TIME_MS );
 });
 
 function get_next_records()
@@ -79,6 +91,8 @@ function update_table( csv_data )
 <h1>Entry Log</h1>
 
 <div id="msg"></div>
+
+<p>Current time: <span id="current_time"></span></p>
 
 <p>
     <input type="button" value="Refresh" onClick="get_list( 0, ROW_LIMIT )">
