@@ -6,3 +6,6 @@ Fix wrong active status:
 
 Add new members into DB:
     python3 build_active_member_cache.py | python3 filter.py --add-to-db | python3 add_members_to_db.py
+
+Add MMS IDs to members that are missing it:
+    python3 build_active_member_cache.py | python3 filter.py --no-mms-id | python3 fix_mms_id.py

@@ -11,10 +11,12 @@ members = json.load( sys.stdin )
 
 
 for member in members:
-    mms = member[ 'mms' ]
-    print( f"Adding {mms['rfid']} as '{mms['display_name']}', mms_id '{mms['id']}' active: {mms['is_active_tag']}" )
-    #DB.add_member(
-    #    mms['display_name'],
-    #    mms['rfid'],
-    #    mms['id'],
-    #)
+    mms_id = member[ 'mms_id' ]
+    display_name = member[ 'name_mms' ]
+    rfid = member[ 'rfid' ]
+    print( f"Adding {rfid} as '{display_name}', mms_id '{mms_id}'" )
+    DB.add_member(
+        display_name,
+        rfid,
+        mms_id,
+    )

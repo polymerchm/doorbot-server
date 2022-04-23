@@ -237,9 +237,9 @@ def handle_add_to_mms_members( members ):
 def handle_no_mms_id_in_db_members( members ):
     no_mms_id_in_db_members = map(
         lambda _ : {
-            'rfid': member[ 'db' ][ 'rfid' ],
-            'mms_id': member[ 'mms' ][ 'mms_id' ],
-            'name_db': member[ 'db' ][ 'display_name' ],
+            'rfid': _[ 'db' ][ 'rfid' ],
+            'mms_id': _[ 'mms' ][ 'mms_id' ],
+            'name_db': _[ 'db' ][ 'display_name' ],
         },
         members,
     )
