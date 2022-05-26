@@ -2,6 +2,7 @@ import psycopg2
 import re
 import sqlite3
 import sys
+import time
 import Doorbot.Config
 
 CONN = None
@@ -204,8 +205,12 @@ def _run_statement(
         if sql.closed != 0:
             print( "Database closed on us, attempting to reconnect",
                 file = sys.stderr )
+            time.sleep( 1 )
+
             new_conn = db_connect()
             set_db( new_conn )
+
+            time.sleep( 1 )
             _run_statement( statement, args, 0 )
         else:
             raise
