@@ -187,15 +187,22 @@ def set_sqlite():
     PLACEHOLDER = '?'
     DT_CONVERT_FUNC = _sqlite_datetime_convert
 
+def _run_statement(
+    statement,
+    args = None,
+):
+    sql = conn()
+    cur = sql.cursor()
+    cur.execute( statement, args )
+    return cur
+
 
 def add_member(
     name: str,
     rfid: str,
     mms_id: str = None,
 ):
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( INSERT_MEMBER, ( name, rfid, mms_id ) )
+    cur = _run_statement( INSERT_MEMBER, ( name, rfid, mms_id ) )
     cur.close()
     return
 
@@ -203,9 +210,7 @@ def change_tag(
     current_rfid: str,
     new_rfid: str,
 ):
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( EDIT_RFID_TAG, ( new_rfid, current_rfid ) )
+    cur = _run_statement( EDIT_RFID_TAG, ( new_rfid, current_rfid ) )
     cur.close()
     return
 
@@ -213,9 +218,7 @@ def change_name(
     rfid: str,
     new_name: str,
 ):
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( EDIT_NAME, ( new_name, rfid ) )
+    cur = _run_statement( EDIT_NAME, ( new_name, rfid ) )
     cur.close()
     return
 
@@ -225,9 +228,7 @@ def fetch_member_by_name(
 ):
     name = name + '%'
 
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( FETCH_MEMBER_BY_NAME, [ name ] )
+    cur = _run_statement( FETCH_MEMBER_BY_NAME, [ name ] )
     row = cur.fetchone()
     cur.close()
 
@@ -245,9 +246,7 @@ def fetch_member_by_name(
 def fetch_member_by_rfid(
     rfid: str,
 ):
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( FETCH_MEMBER_BY_RFID, [ rfid ] )
+    cur = _run_statement( FETCH_MEMBER_BY_RFID, [ rfid ] )
     row = cur.fetchone()
     cur.close()
 
@@ -268,9 +267,9 @@ def log_entry(
     is_active_tag: bool,
     is_found_tag: bool,
 ):
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( LOG_ENTRY, [ rfid, location, is_active_tag, is_found_tag ] )
+    cur = _run_statement( LOG_ENTRY, [
+        rfid, location, is_active_tag, is_found_tag
+    ] )
     cur.close()
     return
 
@@ -299,9 +298,7 @@ def fetch_entries(
     params.append( limit )
     params.append( offset )
 
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( statement, params )
+    cur = _run_statement( statement, params )
     rows = cur.fetchall()
     cur.close()
 
@@ -314,18 +311,14 @@ def fetch_entries(
 def deactivate_member(
     rfid: str
 ):
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( SET_MEMBER_ACTIVE_STATUS, ( False, rfid ) )
+    cur = _run_statement( SET_MEMBER_ACTIVE_STATUS, ( False, rfid ) )
     cur.close()
     return
 
 def activate_member(
     rfid: str
 ):
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( SET_MEMBER_ACTIVE_STATUS, ( True, rfid ) )
+    cur = _run_statement( SET_MEMBER_ACTIVE_STATUS, ( True, rfid ) )
     cur.close()
     return
 
@@ -378,9 +371,7 @@ def search_members(
     statements.append( ' '.join( end ) )
     statement = ' '.join( statements )
 
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( statement, params )
+    cur = _run_statement( statement, params )
     rows = cur.fetchall()
     cur.close()
 
@@ -391,9 +382,7 @@ def search_members(
     return list( results )
 
 def dump_active_members():
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( DUMP_ACTIVE_MEMBERS )
+    cur = _run_statement( DUMP_ACTIVE_MEMBERS, [] )
 
     results = {}
     for row in cur.fetchall():

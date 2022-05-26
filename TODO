@@ -1,9 +1,12 @@
-# Minimum viable product
-* Test on dev
-* Make a copy of the existing Pg database on prod
-* Jenkins deploy to the prod environment
+* MMS -> DB robustness
+** If a member exists in both places, but with different RFID keys, 
+   the build_active_member_cache.py script will consider the member to not 
+   be in the database. The add_members_to_db.py script will then try to add 
+   the member, and fail due to duplicate MMS IDs. How to handle?
+** Could catch DB error and ignore it
+** Could check by MMS ID instead of RFID, and filter it into a list of members 
+   with mismatched RFID
 
-# Next priority
 * Documentation
 ** README on developer setup
 ** Wiki page on broad overview of system
