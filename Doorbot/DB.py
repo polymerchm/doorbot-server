@@ -125,6 +125,8 @@ def db_connect():
 
 def set_db( conn ):
     global CONN
+    # Clear out any existing connection first
+    CONN = None
     CONN = conn
 
 def conn():
