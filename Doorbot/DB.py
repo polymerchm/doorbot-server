@@ -211,7 +211,7 @@ def _run_statement(
             set_db( new_conn )
 
             time.sleep( 1 )
-            _run_statement( statement, args, 0 )
+            return _run_statement( statement, args, 0 )
         else:
             raise
 
