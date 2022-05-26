@@ -190,11 +190,22 @@ def set_sqlite():
 def _run_statement(
     statement,
     args = None,
+    _do_reconnect = 1,
 ):
-    sql = conn()
-    cur = sql.cursor()
-    cur.execute( statement, args )
-    return cur
+    try:
+        sql = conn()
+        cur = sql.cursor()
+        cur.execute( statement, args )
+        return cur
+    except psycopg2.DatabaseError as e:
+        if sql.closed != 0:
+            print( "Database closed on us, attempting to reconnect",
+                file = sys.stderr )
+            new_conn = db_connect()
+            set_db( new_conn )
+            _run_statement( statement, args, 0 )
+        else:
+            pass
 
 
 def add_member(
