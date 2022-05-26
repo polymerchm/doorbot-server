@@ -115,8 +115,8 @@ def db_connect():
         'dbname=' + database,
         'user=' + user,
         'password=' + passwd,
-        #'host=' + host,
-        #'port=' + str( port ),
+        'host=' + host,
+        'port=' + str( port ),
     ])
 
     conn = psycopg2.connect( conn_str )
