@@ -198,7 +198,7 @@ def _run_statement(
         cur = sql.cursor()
         cur.execute( statement, args )
         return cur
-    except psycopg2.Error as e:
+    except BaseException as err:
         if sql.closed != 0:
             print( "Database closed on us, attempting to reconnect",
                 file = sys.stderr )
