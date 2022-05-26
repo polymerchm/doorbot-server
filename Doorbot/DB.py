@@ -1,6 +1,7 @@
 import psycopg2
 import re
 import sqlite3
+import sys
 import Doorbot.Config
 
 CONN = None
@@ -197,7 +198,7 @@ def _run_statement(
         cur = sql.cursor()
         cur.execute( statement, args )
         return cur
-    except psycopg2.DatabaseError as e:
+    except psycopg2.Error as e:
         if sql.closed != 0:
             print( "Database closed on us, attempting to reconnect",
                 file = sys.stderr )
@@ -205,7 +206,7 @@ def _run_statement(
             set_db( new_conn )
             _run_statement( statement, args, 0 )
         else:
-            pass
+            raise
 
 
 def add_member(
