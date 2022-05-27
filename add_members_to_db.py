@@ -15,8 +15,11 @@ for member in members:
     display_name = member[ 'name_mms' ]
     rfid = member[ 'rfid' ]
     print( f"Adding {rfid} as '{display_name}', mms_id '{mms_id}'" )
-    DB.add_member(
-        display_name,
-        rfid,
-        mms_id,
-    )
+    try:
+        DB.add_member(
+            display_name,
+            rfid,
+            mms_id,
+        )
+    except err:
+        print( f"Error adding '{display_name}' (mms ID '{mms_id}': {err} )" )
