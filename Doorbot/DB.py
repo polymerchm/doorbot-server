@@ -1,3 +1,6 @@
+import base64
+import bcrypt
+import hashlib
 import psycopg2
 import re
 import sqlite3
@@ -5,8 +8,8 @@ import sys
 import time
 import Doorbot.Config
 
-PASSWORD_TYPE_PLAINTEXT = 1
-PASSWORD_TYPE_BCRYPT = 2
+PASSWORD_TYPE_PLAINTEXT = "plaintext"
+PASSWORD_TYPE_BCRYPT = "bcrypt"
 
 CONN = None
 
@@ -442,13 +445,12 @@ def dump_active_members():
     return results
 
 def set_password(
-    password_type: str,
-    password_plaintext: str,
     rfid: str,
-    options = {},
+    password_plaintext: str,
+    config: dict = {},
 ):
-    password_type_full = _password_name( password_type, options )
-    encoded_password = _encode_password( password_type, password_plaintext )
+    password_type_full = _password_name( config )
+    encoded_password = _encode_password( password_plaintext, config )
 
     cur = _run_statement( SET_MEMBER_PASSWORD, [
         password_type_full,
@@ -459,11 +461,25 @@ def set_password(
     return
 
 def _encode_password(
-    password_type: str,
     password_plaintext: str,
+    options: dict,
 ):
-    # TODO implement bcrypt
-    return password_plaintext
+    password_type = options[ 'type' ]
+
+    if PASSWORD_TYPE_PLAINTEXT == password_type:
+        return password_plaintext
+    elif PASSWORD_TYPE_BCRYPT == password_type:
+        # SHA256 first so we never hit bcrypt's 72 char limit
+        hashed_pass = base64.b64encode(
+            hashlib.sha256( password_plaintext.encode( 'utf-8' ) ).digest()
+        )
+        encoded = bcrypt.hashpw(
+            hashed_pass,
+            bcrypt.gensalt( options[ 'bcrypt' ][ 'difficulty' ] ),
+        )
+        return encoded
+    else:
+        return password_plaintext
 
 def auth_password(
     rfid: str,
@@ -491,22 +507,29 @@ def _match_password(
     password_plaintext: str,
     password_encoded: str,
 ):
-    # TODO match bcrypt
-    if password_type == "plaintext":
-        # TODO Constant time matching algorithm
+    if PASSWORD_TYPE_PLAINTEXT == password_type:
+        # TODO Constant time matching algorithm. Or don't; it's not like 
+        # plaintext passes should be used beyond testing, anyway.
         return password_plaintext == password_encoded
+    elif re.match( r'^bcrypt_(\d+)$', password_type ):
+        # SHA256 first so we never hit bcrypt's 72 char limit
+        hashed_pass = base64.b64encode(
+            hashlib.sha256( password_plaintext.encode( 'utf-8' ) ).digest()
+        )
+        return bcrypt.checkpw( hashed_pass, password_encoded )
     else:
         # Unknown type
         return False
 
 def _password_name(
-    password_type: str,
     options = {},
 ):
+    password_type = options[ 'type' ]
     if PASSWORD_TYPE_PLAINTEXT == password_type:
         return "plaintext"
     elif PASSWORD_TYPE_BCRYPT == password_type:
-        return "bcrypt"
+        difficulty = options[ 'bcrypt' ][ 'difficulty' ]
+        return "bcrypt_" + str( difficulty )
     else:
         return None
 

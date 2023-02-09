@@ -11,6 +11,11 @@ memberpress:
     passwd: bodgery
     base_url: https://mms.thebodgery.org
 
+password_storage:
+    type: bcrypt
+    bcrypt:
+        difficulty: 10
+
 build_id:
 build_branch:
 build_date:
