@@ -132,18 +132,24 @@ class TestDB( unittest.TestCase ):
             "Name changed"
         );
 
+        # Test setting plaintext password on member
         DB.set_password( member[ 'rfid' ], "foo", {
             "type": "plaintext",
         })
         self.assertTrue(
-            DB.auth_password( member[ 'rfid' ], "foo" ),
+            DB.auth_password( member[ 'rfid' ], "foo", {
+                "type": "plaintext",
+            }),
             "Member passed plaintext auth"
         );
         self.assertFalse(
-            DB.auth_password( member[ 'rfid' ], "bar" ),
+            DB.auth_password( member[ 'rfid' ], "bar", {
+                "type": "plaintext",
+            }),
             "Member did not pass plaintext auth"
         );
 
+        # Test setting bcrypt password on member
         DB.set_password(
             member[ 'rfid' ],
             "bar",
@@ -155,13 +161,81 @@ class TestDB( unittest.TestCase ):
             },
         );
         self.assertTrue(
-            DB.auth_password( member[ 'rfid' ], "bar" ),
+            DB.auth_password( member[ 'rfid' ], "bar", {
+                "type": "bcrypt",
+                "bcrypt": {
+                    "difficulty": 4,
+                },
+            }),
             "Member passed bcrypt auth"
         );
         self.assertFalse(
-            DB.auth_password( member[ 'rfid' ], "foo" ),
+            DB.auth_password( member[ 'rfid' ], "foo", {
+                "type": "bcrypt",
+                "bcrypt": {
+                    "difficulty": 4,
+                },
+            }),
             "Member did not pass bcrypt auth"
         );
+
+        # Test setting a plaintext password, but with bcrypt preferred
+        DB.set_password( member[ 'rfid' ], "foo", {
+            "type": "plaintext",
+        })
+        did_auth = DB.auth_password(
+            member[ 'rfid' ],
+            "foo",
+            {
+                "type": "bcrypt",
+                "bcrypt": {
+                    "difficulty": 4
+                },
+            },
+        )
+        self.assertTrue(
+            did_auth,
+            "Member passed plaintext auth",
+        )
+        cur = DB._run_statement( DB.GET_MEMBER_PASSWORD, [
+            member[ 'rfid' ],
+        ])
+        password_row = cur.fetchone()
+        cur.close()
+        self.assertEqual(
+            password_row[ 0 ],
+            "bcrypt_4",
+            "Plaintext password was encoded to bcrypt",
+        )
+        self.assertNotEqual(
+            password_row[ 1 ],
+            "foo",
+            "Plaintext password was reencoded",
+        )
+        did_auth = DB.auth_password(
+            member[ 'rfid' ],
+            "foo",
+            {
+                "type": "bcrypt",
+                "bcrypt": {
+                    "difficulty": 5
+                },
+            },
+        )
+        self.assertTrue(
+            did_auth,
+            "Member passed bcrypt auth",
+        )
+        cur = DB._run_statement( DB.GET_MEMBER_PASSWORD, [
+            member[ 'rfid' ],
+        ])
+        password_row = cur.fetchone()
+        cur.close()
+        self.assertEqual(
+            password_row[ 0 ],
+            "bcrypt_5",
+            "Plaintext password was encoded to bcrypt with higher difficulty",
+        )
 
     def test_entry_log( self ):
         DB.add_member( "Bar Qux", "5678" )

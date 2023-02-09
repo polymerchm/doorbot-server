@@ -484,6 +484,7 @@ def _encode_password(
 def auth_password(
     rfid: str,
     password_plaintext: str,
+    config = {},
 ):
     cur = _run_statement( GET_MEMBER_PASSWORD, [
         rfid,
@@ -496,11 +497,17 @@ def auth_password(
     else:
         password_type = row[0]
         password_encoded = row[1]
-        return _match_password(
+        matched = _match_password(
             password_type,
             password_plaintext,
             password_encoded,
         )
+
+        # Reencode password if it's not our preferred encoding type
+        if matched and not _is_preferred_auth( password_type, config ):
+            set_password( rfid, password_plaintext, config )
+
+        return matched
 
 def _match_password(
     password_type: str,
@@ -532,6 +539,21 @@ def _password_name(
         return "bcrypt_" + str( difficulty )
     else:
         return None
+
+def _is_preferred_auth(
+    password_type: str,
+    config: dict = {},
+):
+    if password_type == config[ 'type' ]:
+        return True
+    elif m := re.match( r'^bcrypt_(\d+)$', password_type ):
+        if (PASSWORD_TYPE_BCRYPT == password_type) and (
+            m.group(1) == config[ 'bcrypt' ][ 'difficulty' ]
+        ):
+            return True
+        else:
+            return False
+    return False
 
 
 DT_CONVERT_FUNC = _pg_datetime_convert
