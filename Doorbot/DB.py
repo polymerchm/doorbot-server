@@ -5,6 +5,9 @@ import sys
 import time
 import Doorbot.Config
 
+PASSWORD_TYPE_PLAINTEXT = 1
+PASSWORD_TYPE_BCRYPT = 2
+
 CONN = None
 
 INSERT_MEMBER = '''
@@ -19,7 +22,7 @@ FETCH_MEMBER_BY_NAME = '''
     WHERE full_name ILIKE %s
 '''
 FETCH_MEMBER_BY_RFID = '''
-    SELECT full_name, rfid, active, mms_id
+    SELECT id, full_name, rfid, active, mms_id
     FROM members
     WHERE rfid = %s
 '''
@@ -94,6 +97,23 @@ OFFSET = '''
 '''
 PLACEHOLDER = '%s'
 
+SET_MEMBER_PASSWORD = '''
+    UPDATE members
+    SET
+        password_type = %s,
+        encoded_password = %s
+    WHERE rfid = %s
+'''
+
+GET_MEMBER_PASSWORD = '''
+    SELECT
+        password_type,
+        encoded_password
+    FROM members
+    WHERE rfid = %s
+    LIMIT 1
+'''
+
 DT_CONVERT_FUNC = None
 
 
@@ -155,7 +175,10 @@ def set_sqlite():
     global LIMIT
     global OFFSET
     global PLACEHOLDER
+    global SET_MEMBER_PASSWORD
+    global GET_MEMBER_PASSWORD
     global DT_CONVERT_FUNC
+    global IS_SQL_LITE
 
     INSERT_MEMBER = re.sub( placeholder_change, '?', INSERT_MEMBER )
     FETCH_MEMBER_BY_NAME = re.sub( placeholder_change, '?',
@@ -177,6 +200,10 @@ def set_sqlite():
         CASE_INSENSITIVE_NAME_SEARCH )
     LIMIT = re.sub( placeholder_change, '?', LIMIT )
     OFFSET = re.sub( placeholder_change, '?', OFFSET )
+    SET_MEMBER_PASSWORD = re.sub( placeholder_change, '?',
+        SET_MEMBER_PASSWORD )
+    GET_MEMBER_PASSWORD = re.sub( placeholder_change, '?',
+        GET_MEMBER_PASSWORD )
 
     # SQLite doesn't have ILIKE, so hack around it
     FETCH_MEMBER_BY_NAME = '''
@@ -191,6 +218,8 @@ def set_sqlite():
     PLACEHOLDER = '?'
     DT_CONVERT_FUNC = _sqlite_datetime_convert
 
+    IS_SQL_LITE = True
+
 def _run_statement(
     statement,
     args = None,
@@ -202,7 +231,7 @@ def _run_statement(
         cur.execute( statement, args )
         return cur
     except BaseException as err:
-        if sql.closed != 0:
+        if (not IS_SQL_LITE) and sql.closed != 0:
             print( "Database closed on us, attempting to reconnect",
                 file = sys.stderr )
             time.sleep( 1 )
@@ -273,10 +302,11 @@ def fetch_member_by_rfid(
         return None
     else:
         member = {
-            'full_name': row[0],
-            'rfid': row[1],
-            'is_active': True if row[2] else False,
-            'mms_id': row[3],
+            'id': row[0],
+            'full_name': row[1],
+            'rfid': row[2],
+            'is_active': True if row[3] else False,
+            'mms_id': row[4],
         }
         return member
 
@@ -411,6 +441,74 @@ def dump_active_members():
 
     return results
 
+def set_password(
+    password_type: str,
+    password_plaintext: str,
+    rfid: str,
+    options = {},
+):
+    password_type_full = _password_name( password_type, options )
+    encoded_password = _encode_password( password_type, password_plaintext )
+
+    cur = _run_statement( SET_MEMBER_PASSWORD, [
+        password_type_full,
+        encoded_password,
+        rfid,
+    ])
+    cur.close()
+    return
+
+def _encode_password(
+    password_type: str,
+    password_plaintext: str,
+):
+    # TODO implement bcrypt
+    return password_plaintext
+
+def auth_password(
+    rfid: str,
+    password_plaintext: str,
+):
+    cur = _run_statement( GET_MEMBER_PASSWORD, [
+        rfid,
+    ])
+    row = cur.fetchone()
+    cur.close()
+
+    if None == row:
+        return False
+    else:
+        password_type = row[0]
+        password_encoded = row[1]
+        return _match_password(
+            password_type,
+            password_plaintext,
+            password_encoded,
+        )
+
+def _match_password(
+    password_type: str,
+    password_plaintext: str,
+    password_encoded: str,
+):
+    # TODO match bcrypt
+    if password_type == "plaintext":
+        # TODO Constant time matching algorithm
+        return password_plaintext == password_encoded
+    else:
+        # Unknown type
+        return False
+
+def _password_name(
+    password_type: str,
+    options = {},
+):
+    if PASSWORD_TYPE_PLAINTEXT == password_type:
+        return "plaintext"
+    elif PASSWORD_TYPE_BCRYPT == password_type:
+        return "bcrypt"
+    else:
+        return None
 
 
 DT_CONVERT_FUNC = _pg_datetime_convert

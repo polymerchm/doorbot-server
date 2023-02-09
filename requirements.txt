@@ -1,7 +1,8 @@
 psycopg2==2.8.4
-Flask==2.0.1
+Flask==2.2.2
 flask-unittest==0.1.2
 nose2==0.10.0
 PyYAML==5.4.1
-uWSGI==2.0.19.1
+uWSGI==2.0.20
 requests==2.26.0
+bcrypt==4.0.1

@@ -132,6 +132,34 @@ class TestDB( unittest.TestCase ):
             "Name changed"
         );
 
+        DB.set_password( DB.PASSWORD_TYPE_PLAINTEXT, "foo", member[ 'rfid' ] )
+        self.assertTrue(
+            DB.auth_password( member[ 'rfid' ], "foo" ),
+            "Member passed plaintext auth"
+        );
+        self.assertFalse(
+            DB.auth_password( member[ 'rfid' ], "bar" ),
+            "Member did not pass plaintext auth"
+        );
+
+        # TODO
+        #DB.set_password(
+        #    DB.PASSWORD_TYPE_BCRYPT,
+        #    "bar",
+        #    member[ 'rfid' ],
+        #    {
+        #        difficulty: 4
+        #    },
+        #);
+        #self.assertTrue(
+        #    DB.auth_password( member, "bar" ),
+        #    "Member passed bcrypt auth"
+        #);
+        #self.assertFalse(
+        #    DB.auth_password( member, "foo" ),
+        #    "Member did not pass bcrypt auth"
+        #);
+
     def test_entry_log( self ):
         DB.add_member( "Bar Qux", "5678" )
         DB.log_entry( "5678", "cleanroom.door", True, True )

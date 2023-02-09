@@ -12,7 +12,9 @@ CREATE TABLE members (
     phone TEXT NOT NULL,
     email TEXT NOT NULL,
     entry_type TEXT NOT NULL,
-    notes TEXT
+    notes TEXT,
+    password_type TEXT,
+    encoded_password TEXT
 );
 CREATE INDEX members_full_name_trgm_idx ON members
     USING gist (full_name gist_trgm_ops);

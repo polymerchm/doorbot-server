@@ -12,7 +12,9 @@ TABLES = [
         phone TEXT NOT NULL,
         email TEXT NOT NULL,
         entry_type TEXT NOT NULL,
-        notes TEXT
+        notes TEXT,
+        password_type TEXT,
+        encoded_password TEXT
     )''',
 
     '''CREATE TABLE locations (
