@@ -1,9 +1,5 @@
 * Basic auth no longer handled by the frontend proxy
 ** Now handled by the backend, but still HTTP basic auth
-* Passwords stored in the database
-** Plaintext (for testing purposes)
-** Bcrypt (default)
-** Config a preferred type, with any settings it needs (like bcrypt difficulty level)
 * Not all members will have a password stored
 * Page to change password for the logged in user
 * Page to change password for any user

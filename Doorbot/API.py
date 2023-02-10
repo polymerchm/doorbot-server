@@ -1,7 +1,9 @@
 import flask
+from flask_httpauth import HTTPBasicAuth
 import os
 import re
 import Doorbot.DB as DB
+import Doorbot.Config
 
 MATCH_INT = re.compile( ''.join([
     '^',
@@ -24,6 +26,19 @@ app = flask.Flask( __name__,
     static_url_path = '',
     static_folder = '../static',
 )
+auth = HTTPBasicAuth()
+
+
+@auth.verify_password
+def verify_password( username, password ):
+    config = Doorbot.Config.get( 'password_storage' )
+    if DB.auth_password(
+        username,
+        password,
+        config,
+    ):
+        return username
+    return False
 
 
 @app.route( "/" )
@@ -32,6 +47,7 @@ def redirect_home():
     return flask.redirect( '/secure/index.html', code = 301 )
 
 @app.route( "/check_tag/<tag>",  methods = [ "GET" ] )
+@auth.login_required
 def check_tag( tag ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):

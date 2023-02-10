@@ -11,6 +11,7 @@ import Doorbot.DB as DB
 import Doorbot.DBSqlite3
 import Doorbot.API
 
+USER_PASS = ( "user", "pass" )
 
 class TestAPI( flask_unittest.ClientTestCase ):
     app = Doorbot.API.app
@@ -37,25 +38,36 @@ class TestAPI( flask_unittest.ClientTestCase ):
             DB.set_sqlite()
             Doorbot.DBSqlite3.create()
 
+        global user_pass
+        DB.add_member( "_tester", USER_PASS[0] )
+        DB.set_password( USER_PASS[0], USER_PASS[1], {
+            "type": "plaintext",
+        })
+
     @classmethod
     def tearDownClass( cls ):
         DB.close()
 
     def test_check_tag( self, client ):
+        global user_pass
+
         DB.add_member( "Foo Bar", "1234" )
         DB.add_member( "Foo Baz", "4321" )
         DB.deactivate_member( "4321" )
 
         rv = client.get( '/check_tag/1234' )
+        self.assertStatus( rv, 401 )
+
+        rv = client.get( '/check_tag/1234', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
-        rv = client.get( '/check_tag/4321' )
+        rv = client.get( '/check_tag/4321', auth = USER_PASS )
         self.assertStatus( rv, 403 )
 
-        rv = client.get( '/check_tag/1111' )
+        rv = client.get( '/check_tag/1111', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
-        rv = client.get( '/check_tag/foobar' )
+        rv = client.get( '/check_tag/foobar', auth = USER_PASS )
         self.assertStatus( rv, 400 )
 
     def test_entry_location( self, client ):
@@ -76,31 +88,31 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 400 )
 
     def test_add_tag( self, client ):
-        rv = client.get( '/check_tag/9012' )
+        rv = client.get( '/check_tag/9012', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
         rv = client.put( '/secure/new_tag/9012/foo' )
         self.assertStatus( rv, 201 )
 
-        rv = client.get( '/check_tag/9012' )
+        rv = client.get( '/check_tag/9012', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
     def test_activate_deactivate_member( self, client ):
         DB.add_member( "Qux Quux", "0123" )
 
-        rv = client.get( '/check_tag/0123' )
+        rv = client.get( '/check_tag/0123', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
         rv = client.post( '/secure/deactivate_tag/0123' )
         self.assertStatus( rv, 200 )
 
-        rv = client.get( '/check_tag/0123' )
+        rv = client.get( '/check_tag/0123', auth = USER_PASS )
         self.assertStatus( rv, 403 )
 
         rv = client.post( '/secure/reactivate_tag/0123' )
         self.assertStatus( rv, 200 )
 
-        rv = client.get( '/check_tag/0123' )
+        rv = client.get( '/check_tag/0123', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
     def test_search_tags( self, client ):
@@ -176,44 +188,44 @@ class TestAPI( flask_unittest.ClientTestCase ):
         )
 
     def test_edit_tag( self, client ):
-        rv = client.get( '/check_tag/09017' )
+        rv = client.get( '/check_tag/09017', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
-        rv = client.get( '/check_tag/19017' )
+        rv = client.get( '/check_tag/19017', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
         # Create tag
         rv = client.put( '/secure/new_tag/09017/foo' )
         self.assertStatus( rv, 201 )
 
-        rv = client.get( '/check_tag/09017' )
+        rv = client.get( '/check_tag/09017', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
-        rv = client.get( '/check_tag/19017' )
+        rv = client.get( '/check_tag/19017', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
         # Edit tag
         rv = client.post( '/secure/edit_tag/09017/19017' )
         self.assertStatus( rv, 201 )
 
-        rv = client.get( '/check_tag/09017' )
+        rv = client.get( '/check_tag/09017', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
-        rv = client.get( '/check_tag/19017' )
+        rv = client.get( '/check_tag/19017', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
     def test_edit_name( self, client ):
-        rv = client.get( '/check_tag/29017' )
+        rv = client.get( '/check_tag/29017', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
-        rv = client.get( '/check_tag/29017' )
+        rv = client.get( '/check_tag/29017', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
         # Create tag
         rv = client.put( '/secure/new_tag/29017/foo' )
         self.assertStatus( rv, 201 )
 
-        rv = client.get( '/check_tag/29017' )
+        rv = client.get( '/check_tag/29017', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
         # Edit tag
