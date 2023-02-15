@@ -1,6 +1,6 @@
 * Basic auth no longer handled by the frontend proxy
-** Now handled by the backend, but still HTTP basic auth
-* Not all members will have a password stored
+** Login page
+** Session
 * Page to change password for the logged in user
 * Page to change password for any user
 ** Forces user to change their password at next login
@@ -17,6 +17,12 @@
 ** The <location> is the same as what's sent in GET /entry/<tag>/<location>
 ** Dumps all tags that can access the given location; does so in the same format as the existing dump tag endpoint, except with the names of members instead of booleans
 * Create users for each individual doorbot and tool scanner
+* Log everything
+** Who did it
+** Who it was targetted at
+** Change in password
+** Scan at location
+** Change in access level
 
 
 * MMS -> DB robustness
