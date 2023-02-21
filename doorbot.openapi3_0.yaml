@@ -1,0 +1,214 @@
+openapi: 3.0.0
+info:
+  title: Bodgery Auth API
+  description: |-
+    Authenticates and authorizes Bodgery members for doors, tools, etc.
+
+  contact:
+    email: tmurray@wumpus-cave.net
+  version: 1.0.0
+servers:
+  - url: https://rfid-prod.shop.thebodgery.org
+  - url: https://rfid-dev.shop.thebodgery.org  
+tags:
+  - name: rfid
+    description: RFID tag for a member
+  - name: location
+    description: A part of the Bodgery a member might access, like a tool or a door
+paths:
+  /check_tag/{rfid}:
+    get:
+      tags:
+        - rfid
+      summary: Check if an RFID tag is valid
+      description: Check if an RFID tag is valid
+      operationId: check_tag
+      responses:
+        '200':
+          description: Tag is found and valid
+        '400':
+          description: Invalid input
+        '404':
+          description: Tag was not found
+        '403':
+          description: Tag was found, but not valid
+  /entry/{rfid}/{location}:
+    get:
+      tags:
+        - rfid
+        - location
+      summary: Log that an RFID tag was given access to a location
+      description: Log that an RFID tag was given access to a location. Note that this does send back response codes that indicate if the RFID tag was valid and allowed. However, its primary purpose is to log an entry that already happened
+      operationId: log_entry
+      responses:
+        '200':
+          description: Tag is found and valid for this location
+        '400':
+          description: Invalid input
+        '404':
+          description: Tag was not found
+        '403':
+          description: Tag was found, but not active for this location
+  /secure/new_tag/{rfid}/{full_name}:
+    put:
+      tags:
+        - rfid
+      summary: Add a new RFID tag with the given member name
+      description: Add a new RFID tag with the given member name.
+      operationId: new_tag
+      responses:
+        '400':
+          description: Invalid input
+        '201':
+          description: New RFID tag added
+  /secure/deactivate_tag/{rfid}:
+    post:
+      tags:
+        - rfid
+      summary: Deactivate an RFID tag
+      description: Deactivate an RFID tag
+      operationId: deactivate_tag
+      responses:
+        '200':
+          description: Tag was deactivated
+        '400':
+          description: Invalid input
+  /secure/reactivate_tag/{rfid}:
+    post:
+      tags:
+        - rfid
+      summary: Reactivate an RFID tag
+      description: Reactivate an RFID tag
+      operationId: reactivate_tag
+      responses:
+        '200':
+          description: Tag was reactivated
+        '400':
+          description: Invalid input
+  /secure/edit_tag/{current_rfid}/{new_rfid}:
+    post:
+      tags:
+        - rfid
+      summary: Replace an old RFID tag with a new one
+      description: Replace an old RFID tag with a new one
+      operationId: edit_tag
+      responses:
+        '201':
+          description: Tag was changed
+        '400':
+          description: Invalid input
+  /secure/edit_name/{rfid}/{new_name}:
+    post:
+      tags:
+        - rfid
+      summary: Change the name attached to an RFID
+      description: Change the name attached to an RFID
+      operationId: edit_name
+      responses:
+        '201':
+          description: Name was changed
+        '400':
+          description: Invalid input
+  /secure/search_tags:
+    get:
+      summary: Search for tags
+      description: Search for tags
+      parameters:
+        - in: query
+          name: name
+          schema:
+            type: string
+          description: Search for a given name. Case insenstive. Not anchored to the start of the string.
+        - in: query
+          name: tag
+          schema:
+            type: string
+          description: Search for an RFID tag. Exact match.
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: Pagination. starts the response after the offset number.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Pagination. limits the number of responses
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SearchMembersResults'
+  /secure/search_entry_log:
+    get:
+      summary: Search logs
+      description: Search logs
+      parameters:
+        - in: query
+          name: tag
+          schema:
+            type: string
+          description: Search for an RFID tag. Exact match.
+        - in: query
+          name: offset
+          schema:
+            type: integer
+            minimum: 0
+          description: Pagination. starts the response after the offset number.
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Pagination. limits the number of responses
+      responses:
+        '200':
+          description: Search results. This comes as a CSV. Fields are full name, RFID, entry time, was tag active at that time, was tag found at that time, and the location.
+          content:
+            text/csv:
+  /secure/dump_active_tags:
+    get:
+      summary: Dump all currently active tags
+      description: Dump all currently active tags
+      tags:
+        - rfid
+      responses:
+        '200':
+          description: All active tags
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties:
+                    type: boolean
+
+components:
+  schemas:
+    SearchMembersResults:
+      type: object
+      required:
+        - full_name
+        - rfid
+        - active
+        - mms_id
+      properties:
+        full_name:
+          type: string
+          example: 'Jane Doe'
+        rfid:
+          type: string
+          example: '0001234567'
+        active:
+          type: boolean
+        mms_id:
+          type: integer
