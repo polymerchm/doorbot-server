@@ -6,7 +6,7 @@ info:
 
   contact:
     email: tmurray@wumpus-cave.net
-  version: 1.0.0
+  version: 1.1.0
 servers:
   - url: https://rfid-prod.shop.thebodgery.org
   - url: https://rfid-dev.shop.thebodgery.org  
@@ -18,20 +18,62 @@ tags:
 paths:
   /check_tag/{rfid}:
     get:
+      deprecated: true
       tags:
         - rfid
-      summary: Check if an RFID tag is valid
-      description: Check if an RFID tag is valid
+      summary: Check if an RFID tag is valid. DEPRECATED--use /secure/check_tag/{rfid}/{location} instead
+      description: Check if an RFID tag is valid. DEPRECATED--use /secure/check_tag/{rfid}/{location} instead
       operationId: check_tag
       responses:
         '200':
           description: Tag is found and valid
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Tag was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Tag was found, but not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /check_tag/{rfid}/{location}:
+    get:
+      tags:
+        - rfid
+        - location
+      summary: Check if an RFID tag is valid for a given location
+      description: Check if an RFID tag is valid for a given location
+      operationId: check_tag_location
+      responses:
+        '200':
+          description: Tag is found and valid
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Tag was not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Tag was found, but not valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /entry/{rfid}/{location}:
     get:
       tags:
@@ -45,10 +87,22 @@ paths:
           description: Tag is found and valid for this location
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '404':
-          description: Tag was not found
+          description: Tag was not 
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: Tag was found, but not active for this location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /secure/new_tag/{rfid}/{full_name}:
     put:
       tags:
@@ -59,6 +113,10 @@ paths:
       responses:
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '201':
           description: New RFID tag added
   /secure/deactivate_tag/{rfid}:
@@ -73,6 +131,10 @@ paths:
           description: Tag was deactivated
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /secure/reactivate_tag/{rfid}:
     post:
       tags:
@@ -85,6 +147,10 @@ paths:
           description: Tag was reactivated
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /secure/edit_tag/{current_rfid}/{new_rfid}:
     post:
       tags:
@@ -97,6 +163,10 @@ paths:
           description: Tag was changed
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /secure/edit_name/{rfid}/{new_name}:
     post:
       tags:
@@ -109,6 +179,10 @@ paths:
           description: Name was changed
         '400':
           description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /secure/search_tags:
     get:
       summary: Search for tags
@@ -174,10 +248,14 @@ paths:
           description: Search results. This comes as a CSV. Fields are full name, RFID, entry time, was tag active at that time, was tag found at that time, and the location.
           content:
             text/csv:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchEntryLogResults'
   /secure/dump_active_tags:
     get:
-      summary: Dump all currently active tags
-      description: Dump all currently active tags
+      deprecated: true
+      summary: Dump all currently active tags. DEPRECATED--use /secure/dump_active_tags/{location} instead.
+      description: Dump all currently active tags. DEPRECATED--use /secure/dump_active_tags/{location} instead.
       tags:
         - rfid
       responses:
@@ -191,6 +269,125 @@ paths:
                   type: object
                   additionalProperties:
                     type: boolean
+  /secure/dump_active_tags/{location}:
+    get:
+      summary: Dump all currently active tags for the given location 
+      description: Dump all currently active tags for the given location 
+      tags:
+        - rfid
+        - location
+      responses:
+        '200':
+          description: All active tags for the given location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DumpActiveTagsResponse'
+        '404':
+          description: Unknown location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /secure/change_passwd:
+    put:
+      summary: Change password on signed in user
+      description: Change password on signed in user
+      parameters:
+        - in: formData
+          name: cur_pass
+          schema:
+            type: string
+          description: Current password
+        - in: formData
+          name: new_pass
+          schema:
+            type: string
+          description: New password
+        - in: formData
+          name: new_pass2
+          schema:
+            type: string
+          description: New password; verified to match new_pass
+      responses:
+        '200':
+          description: Password changed
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /secure/change_passwd/{rfid}:
+    put:
+      summary: Change password on the given user
+      description: Change password the given user
+      tags:
+        - rfid
+      parameters:
+        - in: formData
+          name: new_pass
+          schema:
+            type: string
+          description: New password
+        - in: formData
+          name: new_pass2
+          schema:
+            type: string
+          description: New password; verified to match new_pass
+      responses:
+        '200':
+          description: Password changed
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /secure/add_access/{rfid}/{location}:
+    put:
+      summary: Give access to a location to the user
+      description: Give access to a location to the user
+      tags:
+        - rfid
+        - location
+      responses:
+        '200':
+          description: Access added
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Current user does not have rights to grant this access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /secure/remove_access/{rfid}/{location}:
+    put:
+      summary: Remove access to a location from user
+      description: Remove access to a location from the user
+      tags:
+        - rfid
+        - location
+      responses:
+        '200':
+          description: Access removed
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Current user does not have rights to remove this access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
@@ -212,3 +409,59 @@ components:
           type: boolean
         mms_id:
           type: integer
+    SearchEntryLogResults:
+      type: array
+      items:
+        type: object
+        # full name, RFID, entry time, was tag active at that time, was tag found at that time, and the location.
+        required:
+          - fullname
+          - rfid
+          - entry time
+          - was_allowed
+          - was_found
+          - location
+        properties:
+          full_name:
+            type: string
+            example: 'Jane Doe'
+          rfid:
+            type: string
+            description: 'ISO8601 date string'
+            example: '0001234567'
+          entry_time:
+            type: string
+            example: '2011-10-05T14:48:00.000Z'
+          was_allowed:
+            description: Was the RFID tag allowed at the time of entry
+            type: boolean
+          was_found:
+            description: Was the RFID tag found at the time of entry
+            type: boolean
+          location:
+            type: string
+            example: 'cleanroom.door'
+    DumpActiveTagsResponse:
+      type: object
+      additionalProperties:
+        type: string
+    ErrorResponse:
+      type: object
+      required:
+        - tag
+        - msg
+        - request_id
+        - datetime
+      properties:
+        tag:
+          type: string
+          example: '0001234567'
+        msg:
+          type: string
+        request_id:
+          type: string
+          description: A randm string to identify the specific request
+        datetime:
+          type: string
+          description: 'ISO8601 date string'
+          example: '2011-10-05T14:48:00.000Z'
