@@ -119,6 +119,8 @@ GET_MEMBER_PASSWORD = '''
 
 DT_CONVERT_FUNC = None
 
+IS_SQL_LITE = False
+
 
 
 def _pg_datetime_convert( dt ):
