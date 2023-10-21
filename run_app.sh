@@ -1,4 +1,4 @@
 #!/bin/bash
 uwsgi \
-    --http-socket :5000 \
+    --http-socket :5002 \
     --module app:app
