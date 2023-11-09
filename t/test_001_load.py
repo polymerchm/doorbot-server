@@ -2,6 +2,7 @@ import unittest
 import Doorbot.Config
 import Doorbot.DB
 import Doorbot.DBSqlite3
+import Doorbot.SQLAlchemy
 import Doorbot.API
 
 

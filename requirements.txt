@@ -7,3 +7,4 @@ PyYAML==5.4.1
 uWSGI==2.0.22
 requests==2.31.0
 bcrypt==4.0.1
+sqlalchemy==2.0.23
