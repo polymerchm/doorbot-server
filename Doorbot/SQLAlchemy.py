@@ -2,7 +2,7 @@ import Doorbot.Config
 from typing import List
 from typing import Optional
 from sqlalchemy import ForeignKey
-from sqlalchemy import Boolean, Date, String
+from sqlalchemy import Boolean, Date, DateTime, String
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
@@ -68,3 +68,41 @@ class Member( Base ):
     notes: Mapped[ str ] = mapped_column( String() )
     password_type: Mapped[ str ] = mapped_column( String() )
     encoded_password: Mapped[ str ] = mapped_column( String() )
+
+class Location( Base ):
+    __tablename__ = "locations"
+
+    id: Mapped[ int ] = mapped_column( primary_key = True )
+    name: Mapped[ str ] = mapped_column(
+        String(),
+        nullable = False,
+    )
+
+class EntryLog( Base ):
+    __tablename__ = "entry_log"
+
+    id: Mapped[ int ] = mapped_column( primary_key = True )
+    rfid: Mapped[ str ] = mapped_column(
+        String(),
+        nullable = False,
+    )
+    entry_time: Mapped[ str ] = mapped_column(
+        DateTime(),
+        nullable = False,
+        default = 'NOW()',
+    )
+    is_active_tag: Mapped[ bool ] = mapped_column(
+        Boolean(),
+        nullable = False,
+    )
+    is_found_tag: Mapped[ bool ] = mapped_column(
+        Boolean(),
+        nullable = False,
+    )
+    location: Mapped[ int ] = mapped_column(
+        ForeignKey( "location.id" )
+    )
+
+    get_location: Mapped[ "Location" ] = relationship(
+        back_populates = "locations"
+    )
