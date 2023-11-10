@@ -55,9 +55,6 @@ class TestAPI( flask_unittest.ClientTestCase ):
         DB.add_member( "Foo Baz", "4321" )
         DB.deactivate_member( "4321" )
 
-        rv = client.get( '/check_tag/1234' )
-        self.assertStatus( rv, 401 )
-
         rv = client.get( '/check_tag/1234', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 

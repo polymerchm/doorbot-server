@@ -119,6 +119,8 @@ GET_MEMBER_PASSWORD = '''
 
 DT_CONVERT_FUNC = None
 
+IS_SQL_LITE = False
+
 
 
 def _pg_datetime_convert( dt ):
@@ -141,6 +143,7 @@ def db_connect():
         'password=' + passwd,
         'host=' + host,
         'port=' + str( port ),
+        'connect_timeout=60',
     ])
 
     conn = psycopg2.connect( conn_str )

@@ -1,5 +1,4 @@
 import flask
-from flask_httpauth import HTTPBasicAuth
 import os
 import re
 import Doorbot.DB as DB
@@ -26,19 +25,6 @@ app = flask.Flask( __name__,
     static_url_path = '',
     static_folder = '../static',
 )
-auth = HTTPBasicAuth()
-
-
-@auth.verify_password
-def verify_password( username, password ):
-    config = Doorbot.Config.get( 'password_storage' )
-    if DB.auth_password(
-        username,
-        password,
-        config,
-    ):
-        return username
-    return False
 
 
 @app.route( "/" )
@@ -47,7 +33,7 @@ def redirect_home():
     return flask.redirect( '/secure/index.html', code = 301 )
 
 @app.route( "/check_tag/<tag>",  methods = [ "GET" ] )
-@auth.login_required
+#@auth.login_required
 def check_tag( tag ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):
@@ -65,7 +51,7 @@ def check_tag( tag ):
     return response
 
 @app.route( "/entry/<tag>/<location>", methods = [ "GET" ] )
-@auth.login_required
+#@auth.login_required
 def log_entry( tag, location ):
     response = flask.make_response()
     if (not MATCH_INT.match( tag )) or (not MATCH_NAME.match( location )):
@@ -86,7 +72,7 @@ def log_entry( tag, location ):
     return response
 
 @app.route( "/secure/new_tag/<tag>/<full_name>", methods = [ "PUT" ] )
-@auth.login_required
+#@auth.login_required
 def new_tag( tag, full_name ):
     response = flask.make_response()
     if (not MATCH_INT.match( tag )) or (not MATCH_NAME.match( full_name )):
@@ -98,7 +84,7 @@ def new_tag( tag, full_name ):
     return response
 
 @app.route( "/secure/deactivate_tag/<tag>", methods = [ "POST" ] )
-@auth.login_required
+#@auth.login_required
 def deactivate_tag( tag ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):
@@ -110,7 +96,7 @@ def deactivate_tag( tag ):
     return response
 
 @app.route( "/secure/reactivate_tag/<tag>", methods = [ "POST" ] )
-@auth.login_required
+#@auth.login_required
 def reactivate_tag( tag ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):
@@ -122,7 +108,7 @@ def reactivate_tag( tag ):
     return response
 
 @app.route( "/secure/edit_tag/<current_tag>/<new_tag>", methods = [ "POST" ] )
-@auth.login_required
+#@auth.login_required
 def edit_tag( current_tag, new_tag ):
     response = flask.make_response()
     if not MATCH_INT.match( current_tag ):
@@ -137,7 +123,7 @@ def edit_tag( current_tag, new_tag ):
     return response
 
 @app.route( "/secure/edit_name/<tag>/<new_name>", methods = [ "POST" ] )
-@auth.login_required
+#@auth.login_required
 def edit_name( tag, new_name ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):
@@ -150,7 +136,7 @@ def edit_name( tag, new_name ):
 
 
 @app.route( "/secure/search_tags", methods = [ "GET" ] )
-@auth.login_required
+#@auth.login_required
 def search_tags():
     args = flask.request.args
     response = flask.make_response()
@@ -188,7 +174,7 @@ def search_tags():
     return response
 
 @app.route( "/secure/search_entry_log", methods = [ "GET" ] )
-@auth.login_required
+#@auth.login_required
 def search_entry_log():
     args = flask.request.args
     response = flask.make_response()
@@ -228,7 +214,7 @@ def search_entry_log():
 
 
 @app.route( "/secure/dump_active_tags", methods = [ "GET" ] )
-@auth.login_required
+#@auth.login_required
 def dump_tags():
     out = DB.dump_active_members()
     return out
