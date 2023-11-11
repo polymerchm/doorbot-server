@@ -1,3 +1,7 @@
+import base64
+import bcrypt
+import hashlib
+import re
 import Doorbot.Config
 from typing import List
 from typing import Optional
@@ -10,7 +14,13 @@ from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
 
 
-def __connect():
+PASSWORD_TYPE_PLAINTEXT = "plaintext"
+PASSWORD_TYPE_BCRYPT = "bcrypt"
+
+
+__ENGINE = None
+
+def __connect_pg():
     pg_conf = Doorbot.Config.get( 'postgresql' )
     user = pg_conf[ 'username' ]
     passwd = pg_conf[ 'passwd' ]
@@ -24,7 +34,20 @@ def __connect():
         "/" + database
 
     engine = create_engine( conn_str )
-engine = __connect()
+    return engine
+
+def set_engine_sqlite():
+    global __ENGINE
+    __ENGINE = create_engine( "sqlite://" )
+
+def get_engine():
+    global __ENGINE
+
+    if __ENGINE is None:
+        __ENGINE = __connect_pg()
+
+    return __ENGINE
+
 
 class Base( DeclarativeBase ):
     pass
@@ -68,6 +91,89 @@ class Member( Base ):
     notes: Mapped[ str ] = mapped_column( String() )
     password_type: Mapped[ str ] = mapped_column( String() )
     encoded_password: Mapped[ str ] = mapped_column( String() )
+
+
+    def set_password(
+        self,
+        username,
+        password,
+        config: dict = {},
+    ):
+        password_type_full = _password_name( config )
+        encoded_password = _encode_password( password_plaintext, config )
+        self.password_type = password_type_full
+        self.encoded_password = encoded_password
+        return
+
+    def _password_name(
+        self,
+        options = {},
+    ):
+        password_type = options[ 'type' ]
+        if PASSWORD_TYPE_PLAINTEXT == password_type:
+            return "plaintext"
+        elif PASSWORD_TYPE_BCRYPT == password_type:
+            difficulty = options[ 'bcrypt' ][ 'difficulty' ]
+            return "bcrypt_" + str( difficulty )
+        else:
+            return None
+
+    def _encode_password(
+        self,
+        password_plaintext: str,
+        options: dict,
+    ):
+        password_type = options[ 'type' ]
+
+        if PASSWORD_TYPE_PLAINTEXT == password_type:
+            return password_plaintext
+        elif PASSWORD_TYPE_BCRYPT == password_type:
+            # SHA256 first so we never hit bcrypt's 72 char limit
+            hashed_pass = base64.b64encode(
+                hashlib.sha256( password_plaintext.encode( 'utf-8' ) ).digest()
+            )
+            encoded = bcrypt.hashpw(
+                hashed_pass,
+                bcrypt.gensalt( options[ 'bcrypt' ][ 'difficulty' ] ),
+            )
+            return encoded
+        else:
+            return password_plaintext
+
+    def auth_password(
+        self,
+        rfid: str,
+        password_plaintext: str,
+        config = {},
+    ):
+        # TODO
+        # * Find member
+        # * Match password
+        # * Re-encode password if it's not the preferred encryption type
+        #
+        return True
+
+    def _match_password(
+        self,
+        password_type: str,
+        password_plaintext: str,
+        password_encoded: str,
+    ):
+        if PASSWORD_TYPE_PLAINTEXT == password_type:
+            # TODO Constant time matching algorithm. Or don't; it's not like 
+            # plaintext passes should be used beyond testing, anyway.
+            return password_plaintext == password_encoded
+        elif re.match( r'^bcrypt_(\d+)$', password_type ):
+            # SHA256 first so we never hit bcrypt's 72 char limit
+            hashed_pass = base64.b64encode(
+                hashlib.sha256( password_plaintext.encode( 'utf-8' ) ).digest()
+            )
+            return bcrypt.checkpw( hashed_pass, password_encoded )
+        else:
+            # Unknown type
+            return False
+
+
 
 class Location( Base ):
     __tablename__ = "locations"
