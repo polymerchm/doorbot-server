@@ -8,6 +8,7 @@ from typing import Optional
 from sqlalchemy import ForeignKey
 from sqlalchemy import Boolean, Date, DateTime, String
 from sqlalchemy import create_engine
+from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
@@ -39,6 +40,7 @@ def __connect_pg():
 def set_engine_sqlite():
     global __ENGINE
     __ENGINE = create_engine( "sqlite://" )
+    Base.metadata.create_all( __ENGINE )
 
 def get_engine():
     global __ENGINE
@@ -62,7 +64,10 @@ class Member( Base ):
         nullable = False,
         default = True,
     )
-    mms_id: Mapped[ str ] = mapped_column( String() )
+    mms_id: Mapped[ str ] = mapped_column(
+        String(),
+        nullable = True,
+    )
     full_name: Mapped[ str ] = mapped_column(
         String(),
         nullable = False,
@@ -70,7 +75,7 @@ class Member( Base ):
     join_date: Mapped[ str ] = mapped_column(
         Date(),
         nullable = False,
-        default = 'NOW()'
+        server_default = func.current_date(),
     )
     end_date: Mapped[ str ] = mapped_column(
         Date(),
@@ -79,28 +84,39 @@ class Member( Base ):
     phone: Mapped[ str ] = mapped_column(
         String(),
         nullable = False,
+        default = '',
     )
     email: Mapped[ str ] = mapped_column(
         String(),
         nullable = False,
+        default = '',
     )
     entry_type: Mapped[ str ] = mapped_column(
         String(),
         nullable = False,
+        default = '',
     )
-    notes: Mapped[ str ] = mapped_column( String() )
-    password_type: Mapped[ str ] = mapped_column( String() )
-    encoded_password: Mapped[ str ] = mapped_column( String() )
+    notes: Mapped[ str ] = mapped_column(
+        String(),
+        nullable = True,
+    )
+    password_type: Mapped[ str ] = mapped_column(
+        String(),
+        nullable = True,
+    )
+    encoded_password: Mapped[ str ] = mapped_column(
+        String(),
+        nullable = True,
+    )
 
 
     def set_password(
         self,
-        username,
-        password,
+        password_plaintext,
         config: dict = {},
     ):
-        password_type_full = _password_name( config )
-        encoded_password = _encode_password( password_plaintext, config )
+        password_type_full = self._password_name( config )
+        encoded_password = self._encode_password( password_plaintext, config )
         self.password_type = password_type_full
         self.encoded_password = encoded_password
         return
@@ -184,6 +200,10 @@ class Location( Base ):
         nullable = False,
     )
 
+    entries: Mapped[ List[ "EntryLog" ] ] = relationship(
+        back_populates = "get_location",
+    )
+
 class EntryLog( Base ):
     __tablename__ = "entry_log"
 
@@ -195,7 +215,7 @@ class EntryLog( Base ):
     entry_time: Mapped[ str ] = mapped_column(
         DateTime(),
         nullable = False,
-        default = 'NOW()',
+        default = func.now(),
     )
     is_active_tag: Mapped[ bool ] = mapped_column(
         Boolean(),
@@ -206,9 +226,9 @@ class EntryLog( Base ):
         nullable = False,
     )
     location: Mapped[ int ] = mapped_column(
-        ForeignKey( "location.id" )
+        ForeignKey( "locations.id" )
     )
 
     get_location: Mapped[ "Location" ] = relationship(
-        back_populates = "locations"
+        back_populates = "entries"
     )

@@ -20,9 +20,6 @@ class TestAPI( flask_unittest.ClientTestCase ):
 
     @classmethod
     def setUpClass( cls ):
-        # TODO
-        return
-
         if 'PG' != os.environ.get( 'DB' ):
             Doorbot.SQLAlchemy.set_engine_sqlite()
 
