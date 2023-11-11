@@ -210,15 +210,34 @@ def search_tags():
     elif limit > 100:
         limit = 100
 
-    members = DB.search_members( name, tag, offset, limit )
+    stmt = select( Member )
+    if name:
+        stmt = stmt.where(
+            Member.full_name.ilike( '%' + name + '%' )
+        )
+    if tag:
+        stmt = stmt.where(
+            Member.rfid == tag,
+        )
+
+    stmt = stmt.order_by(
+        'join_date'
+    ).limit(
+        limit
+    ).offset(
+        offset
+    )
+
+    session = get_session()
+    members = session.scalars( stmt ).all()
 
     out = ''
     for member in members:
         out += ','.join([
-            member[ 'rfid' ],
-            member[ 'full_name' ],
-            "1" if member[ 'active' ] else "0",
-            member[ 'mms_id' ] if  member[ 'mms_id' ] else "",
+            member.rfid,
+            member.full_name,
+            "1" if member.active else "0",
+            member.mms_id if member.mms_id else "",
         ]) + "\n"
 
     response.status = 200

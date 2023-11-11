@@ -135,12 +135,27 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 200 )
 
     def test_search_tags( self, client ):
-        # TODO
-        return
-        DB.add_member( "Bar Quuux", "09865" )
-        DB.add_member( "Bar Quuuux", "98764" )
-        DB.add_member( "Baz Quuux", "87653" )
-        DB.add_member( "Baz Quuuux", "76542" )
+        members = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Quuux",
+                rfid = "09865",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Quuuux",
+                rfid = "98764",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Baz Quuux",
+                rfid = "87653",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Baz Quuuux",
+                rfid = "76542",
+            ),
+        ]
+        session = Session( engine )
+        session.add_all( members )
+        session.commit()
 
         match_bar = re.compile( '.*,.*Bar.*', re.MULTILINE | re.DOTALL | re.I )
         match_quuux = re.compile( '.*,.*quuux.*', flags = re.I )
