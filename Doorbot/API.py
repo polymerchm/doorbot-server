@@ -2,8 +2,13 @@ import flask
 import os
 import re
 import Doorbot.Config
-from Doorbot.SQLAlchemy import EntryLog, Location, Member, get_session
+from Doorbot.SQLAlchemy import Location
+from Doorbot.SQLAlchemy import EntryLog
+from Doorbot.SQLAlchemy import Member
+from Doorbot.SQLAlchemy import get_engine
+from Doorbot.SQLAlchemy import get_session
 from sqlalchemy import select
+from sqlalchemy.sql import text
 
 MATCH_INT = re.compile( ''.join([
     '^',
@@ -284,29 +289,44 @@ def search_entry_log():
     elif limit > 100:
         limit = 100
 
-    stmt = select( EntryLog ).where(
-        EntryLog.rfid == tag,
-    ).order_by(
-        'entry_time'
-    ).limit(
-        limit
-    ).offset(
-        offset
-    )
+    # People could scan an RFID that isn't in the system. We still want to 
+    # log that, but it means we can't explicitly link the member and entry_log 
+    # tables. This is a problem for SQLAlchemy, so don't bother, and use raw 
+    # SQL.
+    sql_params = {
+        "rfid": tag,
+        "offset": offset,
+        "limit": limit,
+    }
+    conn = get_engine().connect()
+    stmt = text( """
+        SELECT
+            members.full_name AS full_name
+            ,entry_log.rfid AS rfid
+            ,locations.name AS location
+            ,entry_log.entry_time AS entry_time
+            ,entry_log.is_active_tag AS is_active_tag
+            ,entry_log.is_found_tag AS is_found_tag
+        FROM entry_log
+        LEFT OUTER JOIN members ON entry_log.rfid = members.rfid
+        LEFT OUTER JOIN locations ON entry_log.location = locations.id
+        WHERE entry_log.rfid = :rfid
+        ORDER BY entry_log.entry_time DESC
+        LIMIT :limit
+        OFFSET :offset
+    """ )
 
-    session = get_session()
-    logs = session.scalars( stmt ).all()
+    logs = conn.execute( stmt, sql_params )
 
-    # TODO join with members table to get data
     out = ''
     for entry in logs:
         out += ','.join([
-            entry[ 'full_name' ] if entry[ 'full_name' ] else "",
-            entry[ 'rfid' ],
-            entry[ 'entry_time' ],
-            "1" if entry[ 'is_active_tag' ] else "0",
-            "1" if entry[ 'is_found_tag' ] else "0",
-            entry[ 'location' ] if entry[ 'location' ] else "",
+            entry[ 0 ] if entry[ 0 ] else "",
+            entry[ 1 ],
+            entry[ 3 ],
+            "1" if entry[ 4 ] else "0",
+            "1" if entry[ 5 ] else "0",
+            entry[ 2 ] if entry[ 2 ] else "",
         ]) + "\n"
 
     response.status = 200

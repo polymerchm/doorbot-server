@@ -186,8 +186,6 @@ class TestAPI( flask_unittest.ClientTestCase ):
         )
 
     def test_search_entry_log( self, client ):
-        # TODO partially converted; see Doorbot.API.search_entry_log()
-        return
         session = Session( engine )
         stmt = select( Doorbot.SQLAlchemy.Location ).where(
             Doorbot.SQLAlchemy.Location.name == "cleanroom.door"
@@ -221,8 +219,18 @@ class TestAPI( flask_unittest.ClientTestCase ):
         )
 
         # Test for blank location
-        DB.log_entry( "09876", None, True, True )
-        rv = client.get( '/secure/search_entry_log', auth = USER_PASS )
+        entries = [
+            Doorbot.SQLAlchemy.EntryLog(
+                rfid = "09876",
+                is_active_tag = True,
+                is_found_tag = True,
+            ),
+        ]
+        session.add_all( entries )
+        session.commit()
+
+        rv = client.get( '/secure/search_entry_log?tag=09876&offset=0&limit=1',
+            auth = USER_PASS )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
             match_cleanroom.match( data ),

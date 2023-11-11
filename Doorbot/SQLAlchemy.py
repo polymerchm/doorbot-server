@@ -232,7 +232,8 @@ class EntryLog( Base ):
         nullable = False,
     )
     location: Mapped[ int ] = mapped_column(
-        ForeignKey( "locations.id" )
+        ForeignKey( "locations.id" ),
+        nullable = True,
     )
 
     mapped_location: Mapped[ "Location" ] = relationship(
