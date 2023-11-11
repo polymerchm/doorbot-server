@@ -13,6 +13,7 @@ from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session
 
 
 PASSWORD_TYPE_PLAINTEXT = "plaintext"
@@ -49,6 +50,11 @@ def get_engine():
         __ENGINE = __connect_pg()
 
     return __ENGINE
+
+def get_session():
+    engine = get_engine()
+    session = Session( engine )
+    return session
 
 
 class Base( DeclarativeBase ):

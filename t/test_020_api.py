@@ -39,8 +39,6 @@ class TestAPI( flask_unittest.ClientTestCase ):
         session.commit()
 
     def test_check_tag( self, client ):
-        # TODO
-        return
         members = [
             Doorbot.SQLAlchemy.Member(
                 full_name = "Foo Bar",

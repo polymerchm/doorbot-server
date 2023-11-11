@@ -2,7 +2,8 @@ import flask
 import os
 import re
 import Doorbot.Config
-import Doorbot.SQLAlchemy
+from Doorbot.SQLAlchemy import Member, get_session
+from sqlalchemy import select
 
 MATCH_INT = re.compile( ''.join([
     '^',
@@ -40,10 +41,15 @@ def check_tag( tag ):
         response.status = 400
         return response
 
-    member = DB.fetch_member_by_rfid( tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
     if None == member:
         response.status = 404
-    elif member[ 'is_active' ]:
+    elif member.active:
         response.status = 200
     else:
         response.status = 403
