@@ -192,7 +192,16 @@ def edit_name( tag, new_name ):
         response.status = 400
         return response
 
-    DB.change_name( tag, new_name )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    member.full_name = new_name
+    session.add( member )
+    session.commit()
+
     response.status = 201
     return response
 
