@@ -109,9 +109,15 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 200 )
 
     def test_activate_deactivate_member( self, client ):
-        # TODO
-        return
-        DB.add_member( "Qux Quux", "0123" )
+        members = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Qux Quux",
+                rfid = "0123",
+            ),
+        ]
+        session = Session( engine )
+        session.add_all( members )
+        session.commit()
 
         rv = client.get( '/check_tag/0123', auth = USER_PASS )
         self.assertStatus( rv, 200 )

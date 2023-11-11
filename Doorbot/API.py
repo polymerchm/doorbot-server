@@ -126,7 +126,16 @@ def deactivate_tag( tag ):
         response.status = 400
         return response
 
-    DB.deactivate_member( tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    member.active = False
+    session.add( member )
+    session.commit()
+
     response.status = 200
     return response
 
@@ -138,7 +147,16 @@ def reactivate_tag( tag ):
         response.status = 400
         return response
 
-    DB.activate_member( tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    member.active = True
+    session.add( member )
+    session.commit()
+
     response.status = 200
     return response
 
