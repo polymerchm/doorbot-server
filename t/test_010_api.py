@@ -260,8 +260,6 @@ class TestAPI( flask_unittest.ClientTestCase ):
         )
 
     def test_edit_tag( self, client ):
-        # TODO
-        return
         rv = client.get( '/check_tag/09017', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 

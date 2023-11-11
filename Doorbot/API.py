@@ -171,7 +171,16 @@ def edit_tag( current_tag, new_tag ):
         response.status = 400
         return response
 
-    DB.change_tag( current_tag, new_tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == current_tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    member.rfid = new_tag
+    session.add( member )
+    session.commit()
+
     response.status = 201
     return response
 
