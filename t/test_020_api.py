@@ -34,8 +34,12 @@ class TestAPI( flask_unittest.ClientTestCase ):
             "type": "plaintext",
         })
 
+        location = Doorbot.SQLAlchemy.Location(
+            name = "cleanroom.door",
+        )
+
         session = Session( engine )
-        session.add( member )
+        session.add_all([ member, location ])
         session.commit()
 
     def test_check_tag( self, client ):
@@ -67,11 +71,20 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 400 )
 
     def test_entry_location( self, client ):
-        # TODO
-        return
-        DB.add_member( "Bar Baz", "5678" )
-        DB.add_member( "Bar Qux", "8765" )
-        DB.deactivate_member( "8765" )
+        members = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Baz",
+                rfid = "5678",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Qux",
+                rfid = "8765",
+                active = False,
+            ),
+        ]
+        session = Session( engine )
+        session.add_all( members )
+        session.commit()
 
         rv = client.get( '/entry/5678/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 200 )

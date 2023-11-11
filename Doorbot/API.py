@@ -2,7 +2,7 @@ import flask
 import os
 import re
 import Doorbot.Config
-from Doorbot.SQLAlchemy import Member, get_session
+from Doorbot.SQLAlchemy import EntryLog, Location, Member, get_session
 from sqlalchemy import select
 
 MATCH_INT = re.compile( ''.join([
@@ -64,16 +64,38 @@ def log_entry( tag, location ):
         response.status = 400
         return response
 
-    member = DB.fetch_member_by_rfid( tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    stmt = select( Location ).where(
+        Location.name == location
+    )
+    location_db = session.scalars( stmt ).one()
+
+    entry = EntryLog(
+        rfid = tag,
+        mapped_location = location_db,
+    )
+
     if None == member:
-        DB.log_entry( tag, location, False, False )
+        entry.is_active_tag = False
+        entry.is_found_tag = False
         response.status = 404
-    elif member[ 'is_active' ]:
-        DB.log_entry( tag, location, True, True )
+    elif member.active:
+        entry.is_active_tag = True
+        entry.is_found_tag = True
         response.status = 200
     else:
-        DB.log_entry( tag, location, False, True )
+        entry.is_active_tag = False
+        entry.is_found_tag = True
         response.status = 403
+
+    session.add( entry )
+    session.add( location_db )
+    session.commit()
 
     return response
 

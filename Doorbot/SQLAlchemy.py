@@ -207,7 +207,7 @@ class Location( Base ):
     )
 
     entries: Mapped[ List[ "EntryLog" ] ] = relationship(
-        back_populates = "get_location",
+        back_populates = "mapped_location",
     )
 
 class EntryLog( Base ):
@@ -235,6 +235,6 @@ class EntryLog( Base ):
         ForeignKey( "locations.id" )
     )
 
-    get_location: Mapped[ "Location" ] = relationship(
+    mapped_location: Mapped[ "Location" ] = relationship(
         back_populates = "entries"
     )
