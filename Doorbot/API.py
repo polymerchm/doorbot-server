@@ -107,7 +107,14 @@ def new_tag( tag, full_name ):
         response.status = 400
         return response
 
-    DB.add_member( full_name, tag )
+    session = get_session()
+    member = Doorbot.SQLAlchemy.Member(
+        full_name = full_name,
+        rfid = tag,
+    )
+    session.add( member )
+    session.commit()
+
     response.status = 201
     return response
 

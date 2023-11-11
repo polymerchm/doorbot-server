@@ -99,8 +99,6 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 400 )
 
     def test_add_tag( self, client ):
-        # TODO
-        return
         rv = client.get( '/check_tag/9012', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
