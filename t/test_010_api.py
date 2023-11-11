@@ -9,6 +9,7 @@ import sqlite3
 import Doorbot.Config
 import Doorbot.API
 import Doorbot.SQLAlchemy
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 
@@ -187,8 +188,26 @@ class TestAPI( flask_unittest.ClientTestCase ):
     def test_search_entry_log( self, client ):
         # TODO
         return
-        DB.add_member( "Bar Quuux", "09876" )
-        DB.log_entry( "09876", "cleanroom.door", True, True )
+        session = Session( engine )
+        stmt = select( Doorbot.SQLAlchemy.Location ).where(
+            Doorbot.SQLAlchemy.Location.name == "cleanroom.door"
+        )
+        location = session.scalars( stmt ).one()
+
+        entries = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Quuux",
+                rfid = "09876",
+            ),
+            Doorbot.SQLAlchemy.EntryLog(
+                rfid = "09876",
+                is_active_tag = True,
+                is_found_tag = True,
+                mapped_location = location,
+            ),
+        ]
+        session.add_all( entries )
+        session.commit()
 
         match_cleanroom = re.compile( '.*,cleanroom\.door.*',
             re.MULTILINE | re.DOTALL )

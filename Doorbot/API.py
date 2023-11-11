@@ -266,10 +266,22 @@ def search_entry_log():
     elif limit > 100:
         limit = 100
 
-    entries = DB.fetch_entries( limit, offset, tag )
+    stmt = select( EntryLog ).where(
+        EntryLog.rfid == tag,
+    ).order_by(
+        'entry_time'
+    ).limit(
+        limit
+    ).offset(
+        offset
+    )
 
+    session = get_session()
+    logs = session.scalars( stmt ).all()
+
+    # TODO join with members table to get data
     out = ''
-    for entry in entries:
+    for entry in logs:
         out += ','.join([
             entry[ 'full_name' ] if entry[ 'full_name' ] else "",
             entry[ 'rfid' ],
