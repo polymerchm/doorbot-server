@@ -300,7 +300,17 @@ def search_entry_log():
 @app.route( "/secure/dump_active_tags", methods = [ "GET" ] )
 #@auth.login_required
 def dump_tags():
-    out = DB.dump_active_members()
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.active == True
+    )
+    members = session.scalars( stmt ).all()
+
+    out = {}
+    for member in members:
+        rfid = member.rfid
+        out[ rfid ] = True
+
     return out
 
 #@app.route('/', defaults={'path': ''})

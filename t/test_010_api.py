@@ -186,7 +186,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
         )
 
     def test_search_entry_log( self, client ):
-        # TODO
+        # TODO partially converted; see Doorbot.API.search_entry_log()
         return
         session = Session( engine )
         stmt = select( Doorbot.SQLAlchemy.Location ).where(
@@ -230,11 +230,20 @@ class TestAPI( flask_unittest.ClientTestCase ):
         )
 
     def test_dump_tags( self, client ):
-        # TODO
-        return
-        DB.add_member( "Qux Quuux", "45321" )
-        DB.add_member( "Qux Quuuux", "12354" )
-        DB.deactivate_member( "12354" )
+        members = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "QUX Quuux",
+                rfid = "45321",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Qux Quuuux",
+                rfid = "12354",
+                active = False,
+            ),
+        ]
+        session = Session( engine )
+        session.add_all( members )
+        session.commit()
 
 
         rv = client.get( '/secure/dump_active_tags', auth = USER_PASS )
