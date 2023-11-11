@@ -1,8 +1,8 @@
 import flask
 import os
 import re
-import Doorbot.DB as DB
 import Doorbot.Config
+import Doorbot.SQLAlchemy
 
 MATCH_INT = re.compile( ''.join([
     '^',
