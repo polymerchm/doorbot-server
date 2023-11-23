@@ -53,3 +53,7 @@ class TestAuth( unittest.TestCase ):
             member.password_type != Doorbot.SQLAlchemy.PASSWORD_TYPE_PLAINTEXT,
             "Password encryption type was changed after checking password" 
         )
+
+        self.assertTrue( member.check_password( USER_PASS[1] ),
+            "Password is still correct after reencoding" )
+

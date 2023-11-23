@@ -197,7 +197,9 @@ class Member( Base ):
         elif PASSWORD_TYPE_BCRYPT == password_config[0]:
             return {
                 "type": PASSWORD_TYPE_BCRYPT,
-                "difficulty": int( password_config[1] ),
+                "bcrypt": {
+                    "difficulty": int( password_config[1] ),
+                },
             }
         else:
             # I dunno what it is. Return plaintext as default.
@@ -244,7 +246,7 @@ class Member( Base ):
             hashed_pass = base64.b64encode(
                 hashlib.sha256( password_plaintext ).digest()
             )
-            return bcrypt.checkpw( password_plaintext, password_encoded )
+            return bcrypt.checkpw( hashed_pass, password_encoded )
         else:
             # I dunno what it is. Assume it's wrong.
             return False
