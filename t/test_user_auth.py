@@ -42,5 +42,11 @@ class TestAuth( unittest.TestCase ):
 
         self.assertTrue( member.check_password( USER_PASS[1] ),
             "Password is correct" )
+        self.assertTrue(
+            member.password_type != Doorbot.SQLAlchemy.PASSWORD_TYPE_PLAINTEXT,
+            "Password encryption type was changed after checking password" 
+        )
         self.assertFalse( member.check_password( USER_PASS[1] + "foo" ),
             "Bad password is incorrect" )
+
+
