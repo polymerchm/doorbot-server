@@ -125,11 +125,12 @@ class Member( Base ):
         encoded_password = self._encode_password( password_plaintext, config )
         self.password_type = password_type_full
         self.encoded_password = encoded_password
+
         return
 
     def _password_name(
         self,
-        options = {},
+        options: dict = {},
     ):
         password_type = options[ 'type' ]
         if PASSWORD_TYPE_PLAINTEXT == password_type:
@@ -162,25 +163,78 @@ class Member( Base ):
         else:
             return password_plaintext
 
-    def auth_password(
+    def check_password(
         self,
-        rfid: str,
         password_plaintext: str,
-        config = {},
     ):
-        # TODO
-        # * Find member
-        # * Match password
-        # * Re-encode password if it's not the preferred encryption type
-        #
-        return True
+        if self._password_does_match( password_plaintext ):
+            target_config = Doorbot.Config.get( 'password_storage' )
+            current_config = self._password_current_config()
 
-    def _match_password(
+            # Might be encrypted with an old way of doing things. Check the 
+            # config, and if it's not the preferred type, then fix that.
+            if not self._password_config_does_match(
+                current_config,
+                target_config,
+            ):
+                self.set_password(
+                    password_plaintext,
+                    target_config,
+                )
+
+            return True
+
+        return False
+
+    def _password_current_config( self ):
+        password_config_str = self.password_type
+        password_config = password_config_str.split( "_" )
+
+        if PASSWORD_TYPE_PLAINTEXT == password_config[0]:
+            return {
+                "type": PASSWORD_TYPE_PLAINTEXT,
+            }
+        elif PASSWORD_TYPE_BCRYPT == password_config[0]:
+            return {
+                "type": PASSWORD_TYPE_BCRYPT,
+                "difficulty": int( password_config[1] ),
+            }
+        else:
+            # I dunno what it is. Return plaintext as default.
+            return {
+                "type": PASSWORD_TYPE_PLAINTEXT,
+            }
+
+    def _password_config_does_match(
         self,
-        password_type: str,
-        password_plaintext: str,
-        password_encoded: str,
+        current_config,
+        target_config,
     ):
+        if current_config[ "type" ] == target_config[ "type" ]:
+            if PASSWORD_TYPE_BCRYPT == target_config[ "type" ]:
+                if current_config[ "bcrypt" ][ "difficulty" ] == target_config[ "bcrypt" ][ "difficulty" ]:
+                    return True
+                else:
+                    return False
+            else:
+                return True
+        else:
+            return False
+
+
+    def _password_does_match(
+        self,
+        password_plaintext: str,
+    ):
+        password_type = self.password_type
+        password_encoded = self.encoded_password
+
+        # Encoding must be normalized
+        if not isinstance( password_encoded, bytes ):
+            password_encoded = password_encoded.encode( 'utf-8' )
+        if not isinstance( password_plaintext, bytes ):
+            password_plaintext = password_plaintext.encode( 'utf-8' )
+
         if PASSWORD_TYPE_PLAINTEXT == password_type:
             # TODO Constant time matching algorithm. Or don't; it's not like 
             # plaintext passes should be used beyond testing, anyway.
@@ -188,11 +242,11 @@ class Member( Base ):
         elif re.match( r'^bcrypt_(\d+)$', password_type ):
             # SHA256 first so we never hit bcrypt's 72 char limit
             hashed_pass = base64.b64encode(
-                hashlib.sha256( password_plaintext.encode( 'utf-8' ) ).digest()
+                hashlib.sha256( password_plaintext ).digest()
             )
-            return bcrypt.checkpw( hashed_pass, password_encoded )
+            return bcrypt.checkpw( password_plaintext, password_encoded )
         else:
-            # Unknown type
+            # I dunno what it is. Assume it's wrong.
             return False
 
 
