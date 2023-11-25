@@ -5,6 +5,8 @@ import re
 import Doorbot.Config
 from typing import List
 from typing import Optional
+from sqlalchemy import Column
+from sqlalchemy import Table
 from sqlalchemy import ForeignKey
 from sqlalchemy import Boolean, Date, DateTime, String
 from sqlalchemy import create_engine
@@ -60,6 +62,13 @@ def get_session():
 class Base( DeclarativeBase ):
     pass
 
+member_role_association = Table(
+    "role_members",
+    Base.metadata,
+    Column( "member_id", ForeignKey( "members.id" ), primary_key = True ),
+    Column( "role_id", ForeignKey( "roles.id" ), primary_key = True ),
+)
+
 class Member( Base ):
     __tablename__ = "members"
 
@@ -113,6 +122,12 @@ class Member( Base ):
     encoded_password: Mapped[ str ] = mapped_column(
         String(),
         nullable = True,
+    )
+
+    roles: Mapped[ List[ "Role" ] ] = relationship(
+        "Role",
+        secondary = lambda: member_role_association,
+        back_populates = "members",
     )
 
 
@@ -251,8 +266,6 @@ class Member( Base ):
             # I dunno what it is. Assume it's wrong.
             return False
 
-
-
 class Location( Base ):
     __tablename__ = "locations"
 
@@ -294,4 +307,60 @@ class EntryLog( Base ):
 
     mapped_location: Mapped[ "Location" ] = relationship(
         back_populates = "entries"
+    )
+
+role_permission_association = Table(
+    "role_permissions",
+    Base.metadata,
+    Column( "role_id", ForeignKey( "roles.id" ), primary_key = True ),
+    Column( "permission_id", ForeignKey( "permissions.id" ), primary_key = True ),
+)
+
+class Role( Base ):
+    __tablename__ = "roles"
+
+    id: Mapped[ int ] = mapped_column( primary_key = True )
+    name: Mapped[ str ] = mapped_column(
+        String(),
+        nullable = False,
+    )
+
+    permissions: Mapped[ List[ "Permission" ] ] = relationship(
+        "Permission",
+        secondary = lambda: role_permission_association,
+        back_populates = "roles",
+    )
+
+    members: Mapped[ List[ "Member" ] ] = relationship(
+        "Member",
+        secondary = lambda: member_role_association,
+        back_populates = "roles",
+    )
+
+class RoleUser( Base ):
+    __tablename__ = "role_users"
+
+    id: Mapped[ int ] = mapped_column( primary_key = True )
+    member_id: Mapped[ int ] = mapped_column(
+        ForeignKey( "members.id" ),
+        nullable = False,
+    )
+    role_id: Mapped[ int ] = mapped_column(
+        ForeignKey( "roles.id" ),
+        nullable = False,
+    )
+
+class Permission( Base ):
+    __tablename__ = "permissions"
+
+    id: Mapped[ int ] = mapped_column( primary_key = True )
+    name: Mapped[ str ] = mapped_column(
+        String(),
+        nullable = False,
+    )
+
+    roles: Mapped[ List[ "Role" ] ] = relationship(
+        "Role",
+        secondary = lambda: role_permission_association,
+        back_populates = "permissions"
     )
