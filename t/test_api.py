@@ -7,53 +7,57 @@ import psycopg2
 import re
 import sqlite3
 import Doorbot.Config
-import Doorbot.DB as DB
-import Doorbot.DBSqlite3
 import Doorbot.API
+import Doorbot.SQLAlchemy
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 
 USER_PASS = ( "user", "pass" )
 
 class TestAPI( flask_unittest.ClientTestCase ):
     app = Doorbot.API.app
+    engine = None
 
     @classmethod
     def setUpClass( cls ):
-        if 'PG' == os.environ.get( 'DB' ):
-            pg_conf = Doorbot.Config.get( 'postgresql' )
-            user = pg_conf[ 'username' ]
-            passwd = pg_conf[ 'passwd' ]
-            database = pg_conf[ 'database' ]
+        if 'PG' != os.environ.get( 'DB' ):
+            Doorbot.SQLAlchemy.set_engine_sqlite()
 
-            conn_str = ' '.join([
-                'dbname=' + database,
-                'user=' + user,
-                'password=' + passwd,
-            ])
-            conn = psycopg2.connect( conn_str )
-            conn.set_session( autocommit = True )
-            DB.set_db( conn )
-        else:
-            conn = sqlite3.connect( ':memory:', isolation_level = None )
-            DB.set_db( conn )
-            DB.set_sqlite()
-            Doorbot.DBSqlite3.create()
+        global engine
+        engine = Doorbot.SQLAlchemy.get_engine()
 
-        global user_pass
-        DB.add_member( "_tester", USER_PASS[0] )
-        DB.set_password( USER_PASS[0], USER_PASS[1], {
+        member = Doorbot.SQLAlchemy.Member(
+            full_name = "_tester",
+            rfid = USER_PASS[0],
+        )
+        member.set_password( USER_PASS[1], {
             "type": "plaintext",
         })
 
-    @classmethod
-    def tearDownClass( cls ):
-        DB.close()
+        location = Doorbot.SQLAlchemy.Location(
+            name = "cleanroom.door",
+        )
+
+        session = Session( engine )
+        session.add_all([ member, location ])
+        session.commit()
 
     def test_check_tag( self, client ):
-        global user_pass
-
-        DB.add_member( "Foo Bar", "1234" )
-        DB.add_member( "Foo Baz", "4321" )
-        DB.deactivate_member( "4321" )
+        members = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Foo Bar",
+                rfid = "1234",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Foo Baz",
+                rfid = "4321",
+                active = False,
+            ),
+        ]
+        session = Session( engine )
+        session.add_all( members )
+        session.commit()
 
         rv = client.get( '/check_tag/1234', auth = USER_PASS )
         self.assertStatus( rv, 200 )
@@ -68,9 +72,20 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 400 )
 
     def test_entry_location( self, client ):
-        DB.add_member( "Bar Baz", "5678" )
-        DB.add_member( "Bar Qux", "8765" )
-        DB.deactivate_member( "8765" )
+        members = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Baz",
+                rfid = "5678",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Qux",
+                rfid = "8765",
+                active = False,
+            ),
+        ]
+        session = Session( engine )
+        session.add_all( members )
+        session.commit()
 
         rv = client.get( '/entry/5678/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 200 )
@@ -95,7 +110,15 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 200 )
 
     def test_activate_deactivate_member( self, client ):
-        DB.add_member( "Qux Quux", "0123" )
+        members = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Qux Quux",
+                rfid = "0123",
+            ),
+        ]
+        session = Session( engine )
+        session.add_all( members )
+        session.commit()
 
         rv = client.get( '/check_tag/0123', auth = USER_PASS )
         self.assertStatus( rv, 200 )
@@ -113,10 +136,27 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 200 )
 
     def test_search_tags( self, client ):
-        DB.add_member( "Bar Quuux", "09865" )
-        DB.add_member( "Bar Quuuux", "98764" )
-        DB.add_member( "Baz Quuux", "87653" )
-        DB.add_member( "Baz Quuuux", "76542" )
+        members = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Quuux",
+                rfid = "09865",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Quuuux",
+                rfid = "98764",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Baz Quuux",
+                rfid = "87653",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Baz Quuuux",
+                rfid = "76542",
+            ),
+        ]
+        session = Session( engine )
+        session.add_all( members )
+        session.commit()
 
         match_bar = re.compile( '.*,.*Bar.*', re.MULTILINE | re.DOTALL | re.I )
         match_quuux = re.compile( '.*,.*quuux.*', flags = re.I )
@@ -146,8 +186,26 @@ class TestAPI( flask_unittest.ClientTestCase ):
         )
 
     def test_search_entry_log( self, client ):
-        DB.add_member( "Bar Quuux", "09876" )
-        DB.log_entry( "09876", "cleanroom.door", True, True )
+        session = Session( engine )
+        stmt = select( Doorbot.SQLAlchemy.Location ).where(
+            Doorbot.SQLAlchemy.Location.name == "cleanroom.door"
+        )
+        location = session.scalars( stmt ).one()
+
+        entries = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Bar Quuux",
+                rfid = "09876",
+            ),
+            Doorbot.SQLAlchemy.EntryLog(
+                rfid = "09876",
+                is_active_tag = True,
+                is_found_tag = True,
+                mapped_location = location,
+            ),
+        ]
+        session.add_all( entries )
+        session.commit()
 
         match_cleanroom = re.compile( '.*,cleanroom\.door.*',
             re.MULTILINE | re.DOTALL )
@@ -161,8 +219,18 @@ class TestAPI( flask_unittest.ClientTestCase ):
         )
 
         # Test for blank location
-        DB.log_entry( "09876", None, True, True )
-        rv = client.get( '/secure/search_entry_log', auth = USER_PASS )
+        entries = [
+            Doorbot.SQLAlchemy.EntryLog(
+                rfid = "09876",
+                is_active_tag = True,
+                is_found_tag = True,
+            ),
+        ]
+        session.add_all( entries )
+        session.commit()
+
+        rv = client.get( '/secure/search_entry_log?tag=09876&offset=0&limit=1',
+            auth = USER_PASS )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
             match_cleanroom.match( data ),
@@ -170,9 +238,20 @@ class TestAPI( flask_unittest.ClientTestCase ):
         )
 
     def test_dump_tags( self, client ):
-        DB.add_member( "Qux Quuux", "45321" )
-        DB.add_member( "Qux Quuuux", "12354" )
-        DB.deactivate_member( "12354" )
+        members = [
+            Doorbot.SQLAlchemy.Member(
+                full_name = "QUX Quuux",
+                rfid = "45321",
+            ),
+            Doorbot.SQLAlchemy.Member(
+                full_name = "Qux Quuuux",
+                rfid = "12354",
+                active = False,
+            ),
+        ]
+        session = Session( engine )
+        session.add_all( members )
+        session.commit()
 
 
         rv = client.get( '/secure/dump_active_tags', auth = USER_PASS )

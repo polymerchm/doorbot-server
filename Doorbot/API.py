@@ -1,8 +1,14 @@
 import flask
 import os
 import re
-import Doorbot.DB as DB
 import Doorbot.Config
+from Doorbot.SQLAlchemy import Location
+from Doorbot.SQLAlchemy import EntryLog
+from Doorbot.SQLAlchemy import Member
+from Doorbot.SQLAlchemy import get_engine
+from Doorbot.SQLAlchemy import get_session
+from sqlalchemy import select
+from sqlalchemy.sql import text
 
 MATCH_INT = re.compile( ''.join([
     '^',
@@ -40,10 +46,15 @@ def check_tag( tag ):
         response.status = 400
         return response
 
-    member = DB.fetch_member_by_rfid( tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
     if None == member:
         response.status = 404
-    elif member[ 'is_active' ]:
+    elif member.active:
         response.status = 200
     else:
         response.status = 403
@@ -58,16 +69,38 @@ def log_entry( tag, location ):
         response.status = 400
         return response
 
-    member = DB.fetch_member_by_rfid( tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    stmt = select( Location ).where(
+        Location.name == location
+    )
+    location_db = session.scalars( stmt ).one()
+
+    entry = EntryLog(
+        rfid = tag,
+        mapped_location = location_db,
+    )
+
     if None == member:
-        DB.log_entry( tag, location, False, False )
+        entry.is_active_tag = False
+        entry.is_found_tag = False
         response.status = 404
-    elif member[ 'is_active' ]:
-        DB.log_entry( tag, location, True, True )
+    elif member.active:
+        entry.is_active_tag = True
+        entry.is_found_tag = True
         response.status = 200
     else:
-        DB.log_entry( tag, location, False, True )
+        entry.is_active_tag = False
+        entry.is_found_tag = True
         response.status = 403
+
+    session.add( entry )
+    session.add( location_db )
+    session.commit()
 
     return response
 
@@ -79,7 +112,14 @@ def new_tag( tag, full_name ):
         response.status = 400
         return response
 
-    DB.add_member( full_name, tag )
+    session = get_session()
+    member = Doorbot.SQLAlchemy.Member(
+        full_name = full_name,
+        rfid = tag,
+    )
+    session.add( member )
+    session.commit()
+
     response.status = 201
     return response
 
@@ -91,7 +131,16 @@ def deactivate_tag( tag ):
         response.status = 400
         return response
 
-    DB.deactivate_member( tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    member.active = False
+    session.add( member )
+    session.commit()
+
     response.status = 200
     return response
 
@@ -103,7 +152,16 @@ def reactivate_tag( tag ):
         response.status = 400
         return response
 
-    DB.activate_member( tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    member.active = True
+    session.add( member )
+    session.commit()
+
     response.status = 200
     return response
 
@@ -118,7 +176,16 @@ def edit_tag( current_tag, new_tag ):
         response.status = 400
         return response
 
-    DB.change_tag( current_tag, new_tag )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == current_tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    member.rfid = new_tag
+    session.add( member )
+    session.commit()
+
     response.status = 201
     return response
 
@@ -130,7 +197,16 @@ def edit_name( tag, new_name ):
         response.status = 400
         return response
 
-    DB.change_name( tag, new_name )
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    member.full_name = new_name
+    session.add( member )
+    session.commit()
+
     response.status = 201
     return response
 
@@ -157,15 +233,34 @@ def search_tags():
     elif limit > 100:
         limit = 100
 
-    members = DB.search_members( name, tag, offset, limit )
+    stmt = select( Member )
+    if name:
+        stmt = stmt.where(
+            Member.full_name.ilike( '%' + name + '%' )
+        )
+    if tag:
+        stmt = stmt.where(
+            Member.rfid == tag,
+        )
+
+    stmt = stmt.order_by(
+        'join_date'
+    ).limit(
+        limit
+    ).offset(
+        offset
+    )
+
+    session = get_session()
+    members = session.scalars( stmt ).all()
 
     out = ''
     for member in members:
         out += ','.join([
-            member[ 'rfid' ],
-            member[ 'full_name' ],
-            "1" if member[ 'active' ] else "0",
-            member[ 'mms_id' ] if  member[ 'mms_id' ] else "",
+            member.rfid,
+            member.full_name,
+            "1" if member.active else "0",
+            member.mms_id if member.mms_id else "",
         ]) + "\n"
 
     response.status = 200
@@ -194,17 +289,44 @@ def search_entry_log():
     elif limit > 100:
         limit = 100
 
-    entries = DB.fetch_entries( limit, offset, tag )
+    # People could scan an RFID that isn't in the system. We still want to 
+    # log that, but it means we can't explicitly link the member and entry_log 
+    # tables. This is a problem for SQLAlchemy, so don't bother, and use raw 
+    # SQL.
+    sql_params = {
+        "rfid": tag,
+        "offset": offset,
+        "limit": limit,
+    }
+    conn = get_engine().connect()
+    stmt = text( """
+        SELECT
+            members.full_name AS full_name
+            ,entry_log.rfid AS rfid
+            ,locations.name AS location
+            ,entry_log.entry_time AS entry_time
+            ,entry_log.is_active_tag AS is_active_tag
+            ,entry_log.is_found_tag AS is_found_tag
+        FROM entry_log
+        LEFT OUTER JOIN members ON entry_log.rfid = members.rfid
+        LEFT OUTER JOIN locations ON entry_log.location = locations.id
+        WHERE entry_log.rfid = :rfid
+        ORDER BY entry_log.entry_time DESC
+        LIMIT :limit
+        OFFSET :offset
+    """ )
+
+    logs = conn.execute( stmt, sql_params )
 
     out = ''
-    for entry in entries:
+    for entry in logs:
         out += ','.join([
-            entry[ 'full_name' ] if entry[ 'full_name' ] else "",
-            entry[ 'rfid' ],
-            entry[ 'entry_time' ],
-            "1" if entry[ 'is_active_tag' ] else "0",
-            "1" if entry[ 'is_found_tag' ] else "0",
-            entry[ 'location' ] if entry[ 'location' ] else "",
+            entry[ 0 ] if entry[ 0 ] else "",
+            entry[ 1 ],
+            entry[ 3 ],
+            "1" if entry[ 4 ] else "0",
+            "1" if entry[ 5 ] else "0",
+            entry[ 2 ] if entry[ 2 ] else "",
         ]) + "\n"
 
     response.status = 200
@@ -216,7 +338,17 @@ def search_entry_log():
 @app.route( "/secure/dump_active_tags", methods = [ "GET" ] )
 #@auth.login_required
 def dump_tags():
-    out = DB.dump_active_members()
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.active == True
+    )
+    members = session.scalars( stmt ).all()
+
+    out = {}
+    for member in members:
+        rfid = member.rfid
+        out[ rfid ] = True
+
     return out
 
 #@app.route('/', defaults={'path': ''})
