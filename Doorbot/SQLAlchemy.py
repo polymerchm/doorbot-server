@@ -337,6 +337,28 @@ class Role( Base ):
         back_populates = "roles",
     )
 
+    def has_permission( self, permission ):
+        session = get_session()
+
+        if isinstance( permission, Permission ):
+            permission = permission.name
+            stmt = select( Permission ).where(
+                Permission.name == permission
+            )
+            permission = session.scalars( stmt ).one()
+
+        result = session.query(
+                Permission.name
+            ).filter(
+                role_permission_association.c.role_id == self.id,
+            ).filter(
+                role_permission_association.c.permission_id == Permission.id
+            ).filter(
+                Permission.name == permission
+            ).first()
+
+        return result is not None
+
 class RoleUser( Base ):
     __tablename__ = "role_users"
 
