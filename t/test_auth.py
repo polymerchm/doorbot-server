@@ -70,8 +70,6 @@ class TestAuth( unittest.TestCase ):
             "Role does not have other.thing permission" )
 
     def test_member_has_permission( self ):
-        # TODO
-        return
         session = Session( engine )
 
         member_fetch_stmt = select( Doorbot.SQLAlchemy.Member ).where(

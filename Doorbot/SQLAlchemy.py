@@ -69,6 +69,13 @@ member_role_association = Table(
     Column( "role_id", ForeignKey( "roles.id" ), primary_key = True ),
 )
 
+role_permission_association = Table(
+    "role_permissions",
+    Base.metadata,
+    Column( "role_id", ForeignKey( "roles.id" ), primary_key = True ),
+    Column( "permission_id", ForeignKey( "permissions.id" ), primary_key = True ),
+)
+
 class Member( Base ):
     __tablename__ = "members"
 
@@ -130,6 +137,32 @@ class Member( Base ):
         back_populates = "members",
     )
 
+
+    def has_permission( self, permission ):
+        session = get_session()
+
+        if isinstance( permission, Permission ):
+            permission = permission.name
+            stmt = select( Permission ).where(
+                Permission.name == permission
+            )
+            permission = session.scalars( stmt ).one()
+
+        result = session.query(
+                Permission.name
+            ).filter(
+                member_role_association.c.member_id == self.id
+            ).filter(
+                member_role_association.c.role_id == Role.id
+            ).filter(
+                role_permission_association.c.role_id == Role.id
+            ).filter(
+                role_permission_association.c.permission_id == Permission.id
+            ).filter(
+                Permission.name == permission
+            ).first()
+
+        return result is not None
 
     def set_password(
         self,
@@ -308,13 +341,6 @@ class EntryLog( Base ):
     mapped_location: Mapped[ "Location" ] = relationship(
         back_populates = "entries"
     )
-
-role_permission_association = Table(
-    "role_permissions",
-    Base.metadata,
-    Column( "role_id", ForeignKey( "roles.id" ), primary_key = True ),
-    Column( "permission_id", ForeignKey( "permissions.id" ), primary_key = True ),
-)
 
 class Role( Base ):
     __tablename__ = "roles"
