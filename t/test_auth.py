@@ -9,8 +9,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 
-RFID = "1234"
-ROLE_NAME = "doors"
+RFID_FOO = "1234"
+RFID_BAR = "2345"
+RFID_BAZ = "3456"
 
 
 class TestAuth( unittest.TestCase ):
@@ -28,29 +29,55 @@ class TestAuth( unittest.TestCase ):
         permission_front_door = Doorbot.SQLAlchemy.Permission(
             name = "front.door",
         )
-        permission_other_thing = Doorbot.SQLAlchemy.Permission(
-            name = "other.thing",
+        permission_wood_bandsaw = Doorbot.SQLAlchemy.Permission(
+            name = "woodshop.bandsaw",
+        )
+        permission_wood_tablesaw = Doorbot.SQLAlchemy.Permission(
+            name = "woodshop.tablesaw",
         )
 
         role_doors = Doorbot.SQLAlchemy.Role(
-            name = ROLE_NAME,
+            name = "doors",
         )
         role_doors.permissions.append( permission_back_door )
         role_doors.permissions.append( permission_front_door )
 
-        member = Doorbot.SQLAlchemy.Member(
-            full_name = "_tester",
-            rfid = RFID,
+        role_wood = Doorbot.SQLAlchemy.Role(
+            name = "woodshop",
         )
-        member.roles.append( role_doors )
+        role_doors.permissions.append( permission_wood_bandsaw )
+        role_doors.permissions.append( permission_wood_tablesaw )
+
+        member_foo = Doorbot.SQLAlchemy.Member(
+            full_name = "foo",
+            rfid = RFID_FOO,
+        )
+        member_foo.roles.append( role_doors )
+
+        member_bar = Doorbot.SQLAlchemy.Member(
+            full_name = "bar",
+            rfid = RFID_BAR,
+        )
+        member_bar.roles.append( role_wood )
+
+        member_baz = Doorbot.SQLAlchemy.Member(
+            full_name = "baz",
+            rfid = RFID_BAZ,
+        )
+        member_baz.roles.append( role_wood )
+        member_baz.roles.append( role_doors )
 
         session = Session( engine )
         session.add_all([
             permission_back_door,
             permission_front_door,
-            permission_other_thing,
+            permission_wood_bandsaw,
+            permission_wood_tablesaw,
             role_doors,
-            member,
+            role_wood,
+            member_foo,
+            member_bar,
+            member_baz,
         ])
         session.commit()
 
@@ -58,7 +85,7 @@ class TestAuth( unittest.TestCase ):
         session = Session( engine )
 
         role_fetch_stmt = select( Doorbot.SQLAlchemy.Role ).where(
-            Doorbot.SQLAlchemy.Role.name == ROLE_NAME
+            Doorbot.SQLAlchemy.Role.name == "doors"
         )
         role = session.scalars( role_fetch_stmt ).one()
 
@@ -73,7 +100,7 @@ class TestAuth( unittest.TestCase ):
         session = Session( engine )
 
         member_fetch_stmt = select( Doorbot.SQLAlchemy.Member ).where(
-            Doorbot.SQLAlchemy.Member.rfid == RFID
+            Doorbot.SQLAlchemy.Member.rfid == RFID_FOO
         )
         member = session.scalars( member_fetch_stmt ).one()
 
