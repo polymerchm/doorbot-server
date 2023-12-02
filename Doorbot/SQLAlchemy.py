@@ -164,6 +164,23 @@ class Member( Base ):
 
         return result is not None
 
+    def all_permissions( self ):
+        session = get_session()
+
+        result = session.query(
+                Permission
+            ).filter(
+                member_role_association.c.member_id == self.id
+            ).filter(
+                member_role_association.c.role_id == Role.id
+            ).filter(
+                role_permission_association.c.role_id == Role.id
+            ).filter(
+                role_permission_association.c.permission_id == Permission.id
+            ).all()
+
+        return result
+
     def set_password(
         self,
         password_plaintext,
