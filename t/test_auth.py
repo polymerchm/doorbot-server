@@ -111,6 +111,23 @@ class TestAuth( unittest.TestCase ):
         self.assertFalse( member.has_permission( "other.thing" ),
             "Member does not have other.thing permission" )
 
+    def test_member_all_roles( self ):
+        session = Session( engine )
+
+        member_fetch_stmt = select( Doorbot.SQLAlchemy.Member ).where(
+            Doorbot.SQLAlchemy.Member.rfid == RFID_BAZ
+        )
+        member = session.scalars( member_fetch_stmt ).one()
+        roles = member.all_roles()
+        role_names = [ x.name for x in roles ]
+        role_names.sort()
+
+        self.assertEqual( role_names, [
+            "doors",
+            "woodshop",
+        ], "Roles found as expected" );
+
+
     def test_member_all_permissions( self ):
         session = Session( engine )
 

@@ -181,6 +181,19 @@ class Member( Base ):
 
         return result
 
+    def all_roles( self ):
+        session = get_session()
+
+        result = session.query(
+                Role
+            ).filter(
+                member_role_association.c.member_id == self.id
+            ).filter(
+                member_role_association.c.role_id == Role.id
+            ).all()
+
+        return result
+
     def set_password(
         self,
         password_plaintext,
