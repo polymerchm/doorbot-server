@@ -45,8 +45,8 @@ class TestAuth( unittest.TestCase ):
         role_wood = Doorbot.SQLAlchemy.Role(
             name = "woodshop",
         )
-        role_doors.permissions.append( permission_wood_bandsaw )
-        role_doors.permissions.append( permission_wood_tablesaw )
+        role_wood.permissions.append( permission_wood_bandsaw )
+        role_wood.permissions.append( permission_wood_tablesaw )
 
         member_foo = Doorbot.SQLAlchemy.Member(
             full_name = "foo",
@@ -93,8 +93,8 @@ class TestAuth( unittest.TestCase ):
             "Role has back.door permission" )
         self.assertTrue( role.has_permission( "front.door" ),
             "Role has front.door permission" )
-        self.assertFalse( role.has_permission( "other.thing" ),
-            "Role does not have other.thing permission" )
+        self.assertFalse( role.has_permission( "woodshop.bandsaw" ),
+            "Role does not have woodshop.bandsaw permission" )
 
     def test_member_has_permission( self ):
         session = Session( engine )
@@ -108,8 +108,8 @@ class TestAuth( unittest.TestCase ):
             "Member has back.door permission via role" )
         self.assertTrue( member.has_permission( "front.door" ),
             "Member has front.door permission via role" )
-        self.assertFalse( member.has_permission( "other.thing" ),
-            "Member does not have other.thing permission" )
+        self.assertFalse( member.has_permission( "woodshop.bandsaw" ),
+            "Member does not have woodshop.bandsaw permission" )
 
     def test_member_all_roles( self ):
         session = Session( engine )
@@ -127,7 +127,6 @@ class TestAuth( unittest.TestCase ):
             "woodshop",
         ], "Roles found as expected" );
 
-
     def test_member_all_permissions( self ):
         session = Session( engine )
 
@@ -144,4 +143,20 @@ class TestAuth( unittest.TestCase ):
             "front.door",
             "woodshop.bandsaw",
             "woodshop.tablesaw",
+        ], "Permissions found as expected" );
+
+    def test_role_all_permissions( self ):
+        session = Session( engine )
+
+        role_fetch_stmt = select( Doorbot.SQLAlchemy.Role ).where(
+            Doorbot.SQLAlchemy.Role.name == "doors"
+        )
+        role = session.scalars( role_fetch_stmt ).one()
+        permissions = role.all_permissions()
+        permission_names = [ x.name for x in permissions ]
+        permission_names.sort()
+
+        self.assertEqual( permission_names, [
+            "back.door",
+            "front.door",
         ], "Permissions found as expected" );

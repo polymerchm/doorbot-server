@@ -403,17 +403,30 @@ class Role( Base ):
             )
             permission = session.scalars( stmt ).one()
 
-        result = session.query(
-                Permission.name
-            ).filter(
-                role_permission_association.c.role_id == self.id,
-            ).filter(
-                role_permission_association.c.permission_id == Permission.id
-            ).filter(
-                Permission.name == permission
-            ).first()
+        query = session.query( Permission ).join(
+                Role,
+                Permission.roles,
+            ).where(
+                (Permission.name == permission) &
+                (Role.id == self.id)
+            )
+        result = query.first()
 
         return result is not None
+
+    def all_permissions( self ):
+        session = get_session()
+
+        result = session.query(
+                Permission
+            ).filter(
+                role_permission_association.c.role_id == self.id
+            ).filter(
+                role_permission_association.c.permission_id == Permission.id
+            ).all()
+
+        return result
+
 
 class RoleUser( Base ):
     __tablename__ = "role_users"
