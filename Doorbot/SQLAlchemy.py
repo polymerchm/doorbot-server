@@ -455,3 +455,21 @@ class Permission( Base ):
         secondary = lambda: role_permission_association,
         back_populates = "permissions"
     )
+
+    def all_members_with_permission( self ):
+        session = get_session()
+
+        result = session.query(
+                Member
+            ).filter(
+                role_permission_association.c.permission_id == self.id
+            ).filter(
+                role_permission_association.c.role_id == Role.id
+            ).filter(
+                member_role_association.c.role_id == Role.id
+            ).filter(
+                member_role_association.c.member_id == Member.id
+            ).all()
+
+        return result
+

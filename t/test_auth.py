@@ -159,4 +159,23 @@ class TestAuth( unittest.TestCase ):
         self.assertEqual( permission_names, [
             "back.door",
             "front.door",
-        ], "Permissions found as expected" );
+        ], "Permissions found as expected" )
+
+    def test_all_members_with_permission( self ):
+        session = Session( engine )
+
+        permission_fetch_stmt = select( Doorbot.SQLAlchemy.Permission ).where(
+            Doorbot.SQLAlchemy.Permission.name == "woodshop.bandsaw"
+        )
+        permission = session.scalars( permission_fetch_stmt ).one()
+
+        members = list( map (
+            lambda user: user.rfid,
+            permission.all_members_with_permission()
+        ) )
+        members.sort()
+
+        self.assertEqual( members, [
+            RFID_BAR,
+            RFID_BAZ,
+        ], "Members found as expected" )
