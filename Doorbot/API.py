@@ -334,6 +334,21 @@ def search_entry_log():
     response.set_data( out )
     return response
 
+@app.route( "/secure/dump_active_tags/<permission>", methods = [ "GET" ] )
+#@auth.login_required
+def dump_tags_for_permission( permission ):
+    session = get_session()
+    stmt = select( Doorbot.SQLAlchemy.Permission ).where(
+        Doorbot.SQLAlchemy.Permission.name == permission
+    )
+    found_permission = session.scalars( stmt ).one()
+
+    members = {}
+    for member in found_permission.all_members_with_permission():
+        rfid = member.rfid
+        members[ rfid ] = True
+
+    return members
 
 @app.route( "/secure/dump_active_tags", methods = [ "GET" ] )
 #@auth.login_required
@@ -350,6 +365,7 @@ def dump_tags():
         out[ rfid ] = True
 
     return out
+
 
 #@app.route('/', defaults={'path': ''})
 #@app.route( "/<path:path>" )

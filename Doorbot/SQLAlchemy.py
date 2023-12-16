@@ -456,10 +456,13 @@ class Permission( Base ):
         back_populates = "permissions"
     )
 
-    def all_members_with_permission( self ):
+    def all_members_with_permission(
+        self,
+        do_allow_inactive = False,
+    ):
         session = get_session()
 
-        result = session.query(
+        query = session.query(
                 Member
             ).filter(
                 role_permission_association.c.permission_id == self.id
@@ -469,7 +472,10 @@ class Permission( Base ):
                 member_role_association.c.role_id == Role.id
             ).filter(
                 member_role_association.c.member_id == Member.id
-            ).all()
+            )
+        if not do_allow_inactive:
+            query = query.filter( Member.active == True )
 
+        result = query.all()
         return result
 
