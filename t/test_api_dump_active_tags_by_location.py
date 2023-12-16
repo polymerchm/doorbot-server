@@ -114,4 +114,7 @@ class TestDumpTagsByLocationAPI( flask_unittest.ClientTestCase ):
         assert( not RFID3 in data,
             "Third user has permission, but inactive, can't use woodshop" )
 
-    # TODO error for permission not found
+    def test_dump_active_tags_not_found( self, client ):
+        rv = client.get( '/secure/dump_active_tags/no_such.permission',
+            auth = USER_PASS )
+        self.assertStatus( rv, 404 )

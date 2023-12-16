@@ -341,14 +341,25 @@ def dump_tags_for_permission( permission ):
     stmt = select( Doorbot.SQLAlchemy.Permission ).where(
         Doorbot.SQLAlchemy.Permission.name == permission
     )
-    found_permission = session.scalars( stmt ).one()
+    found_permission = session.scalars( stmt ).one_or_none()
 
-    members = {}
-    for member in found_permission.all_members_with_permission():
-        rfid = member.rfid
-        members[ rfid ] = True
+    response = flask.make_response()
+    if found_permission is None:
+        response.status = 404
+        response.content_type = 'text/plain'
+        response.set_data( "Permission " + permission + " was not found" )
+        # TODO follow ErrorResponse definition in openapi
+    else:
+        members = {}
+        for member in found_permission.all_members_with_permission():
+            rfid = member.rfid
+            members[ rfid ] = True
 
-    return members
+        json_data = flask.json.dumps( members )
+        response.content_type = 'application/json'
+        response.set_data( json_data )
+
+    return response
 
 @app.route( "/secure/dump_active_tags", methods = [ "GET" ] )
 #@auth.login_required
