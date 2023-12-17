@@ -338,6 +338,12 @@ paths:
       responses:
         '200':
           description: Password changed
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '400':
           description: Invalid input
           content:

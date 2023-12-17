@@ -378,6 +378,44 @@ def dump_tags():
     return out
 
 
+@app.route( "/secure/change_passwd/<rfid>", methods = [ "PUT" ] )
+#@auth.login_required
+def change_password( rfid ):
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == rfid
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    response = flask.make_response()
+
+    if member is None:
+        response.status = 404
+        response.content_type = 'text/plain'
+        response.set_data( "Member with RFID " + rfid + " was not found" )
+        # TODO follow ErrorResponse definition in openapi
+    else:
+        pass1 = flask.request.form[ 'new_pass' ]
+        pass2 = flask.request.form[ 'new_pass2' ]
+
+        if pass1 != pass2:
+            response.status = 400
+            response.content_type = 'text/plain'
+            response.set_data( "Passwords do not match" )
+            # TODO follow ErrorResponse definition in openapi
+        else:
+            member.set_password( pass1, {
+                "type": "plaintext",
+            })
+            response.status = 200
+
+    return response
+
+# TODO /secure/chagne_passwd
+# TODO modify below TODOs to match evolved role/permission system
+# TODO /secure/add_access/<rfid>/<permission>
+# TODO /secure/remove_access/<rfid>/<permission>
+
 #@app.route('/', defaults={'path': ''})
 #@app.route( "/<path:path>" )
 #def catch_all_secure( path ):
