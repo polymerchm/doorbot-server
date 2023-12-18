@@ -7,6 +7,7 @@ from Doorbot.SQLAlchemy import EntryLog
 from Doorbot.SQLAlchemy import Member
 from Doorbot.SQLAlchemy import get_engine
 from Doorbot.SQLAlchemy import get_session
+from datetime import datetime
 from sqlalchemy import select
 from sqlalchemy.sql import text
 
@@ -41,10 +42,11 @@ def set_error(
         "msg": msg,
         "datetime": datetime.now().isoformat(),
     }
+    json_data = flask.json.dumps( error_data )
 
     response.status = status
     response.content_type = 'application/json'
-    response.set_data( error_data )
+    response.set_data( json_data )
     return response
 
 
@@ -360,10 +362,11 @@ def dump_tags_for_permission( permission ):
 
     response = flask.make_response()
     if found_permission is None:
-        response.status = 404
-        response.content_type = 'text/plain'
-        response.set_data( "Permission " + permission + " was not found" )
-        # TODO follow ErrorResponse definition in openapi
+        set_error(
+            response = response,
+            msg = "Permission " + permission + " was not found",
+            status = 404,
+        )
     else:
         members = {}
         for member in found_permission.all_members_with_permission():
@@ -405,10 +408,11 @@ def change_password( rfid ):
     response = flask.make_response()
 
     if member is None:
-        response.status = 404
-        response.content_type = 'text/plain'
-        response.set_data( "Member with RFID " + rfid + " was not found" )
-        # TODO follow ErrorResponse definition in openapi
+        set_error(
+            response = response,
+            msg = "Member with RFID " + rfid + " was not found",
+            status = 404,
+        )
     else:
         pass1 = flask.request.form[ 'new_pass' ]
         pass2 = flask.request.form[ 'new_pass2' ]
@@ -419,10 +423,6 @@ def change_password( rfid ):
                 msg = "Passwords do not match",
                 status = 400,
             )
-            response.status = 400
-            response.content_type = 'text/plain'
-            response.set_data( "Passwords do not match" )
-            # TODO follow ErrorResponse definition in openapi
         else:
             member.set_password( pass1, {
                 "type": "plaintext",
