@@ -454,14 +454,9 @@ components:
     ErrorResponse:
       type: object
       required:
-        - tag
         - msg
-        - request_id
         - datetime
       properties:
-        tag:
-          type: string
-          example: '0001234567'
         msg:
           type: string
         request_id:

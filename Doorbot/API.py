@@ -32,6 +32,21 @@ app = flask.Flask( __name__,
     static_folder = '../static',
 )
 
+def set_error(
+    response,
+    msg,
+    status = 500,
+):
+    error_data = {
+        "msg": msg,
+        "datetime": datetime.now().isoformat(),
+    }
+
+    response.status = status
+    response.content_type = 'application/json'
+    response.set_data( error_data )
+    return response
+
 
 @app.route( "/" )
 @app.route( "/index.html" )
@@ -399,6 +414,11 @@ def change_password( rfid ):
         pass2 = flask.request.form[ 'new_pass2' ]
 
         if pass1 != pass2:
+            set_error(
+                response = response,
+                msg = "Passwords do not match",
+                status = 400,
+            )
             response.status = 400
             response.content_type = 'text/plain'
             response.set_data( "Passwords do not match" )
