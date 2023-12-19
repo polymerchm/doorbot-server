@@ -350,16 +350,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/add_access/{rfid}/{location}:
+  /secure/add_role/{rfid}/{role}:
     put:
-      summary: Give access to a location to the user
-      description: Give access to a location to the user
+      summary: Give access to a role to the user
+      description: Give access to a role to the user. If the role does not exist, it will be created.
       tags:
         - rfid
-        - location
+        - permission
       responses:
         '200':
-          description: Access added
+          description: Role added to user
         '400':
           description: Invalid input
           content:
@@ -372,13 +372,57 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/remove_access/{rfid}/{location}:
+  /secure/remove_role/{rfid}/{role}:
     put:
-      summary: Remove access to a location from user
-      description: Remove access to a location from the user
+      summary: Remove access to a role from user
+      description: Remove access to a role from the user
       tags:
         - rfid
-        - location
+        - permission
+      responses:
+        '200':
+          description: Role removed from user
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Current user does not have rights to remove this access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /secure/add_permission/{role}/{permission}:
+    put:
+      summary: Add a permission to a role
+      description: Add a permission to a role. If the role or permission does not exist, they will be created.
+      tags:
+        - rfid
+        - permission
+      responses:
+        '200':
+          description: Permission added to role
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Current user does not have rights to grant this access.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /secure/remove_permission/{role}/{permission}:
+    put:
+      summary: Remove a permission from a role
+      description: Remove a permission from a role
+      tags:
+        - rfid
+        - permission
       responses:
         '200':
           description: Access removed
@@ -461,7 +505,7 @@ components:
           type: string
         request_id:
           type: string
-          description: A randm string to identify the specific request
+          description: A random string to identify the specific request
         datetime:
           type: string
           description: 'ISO8601 date string'

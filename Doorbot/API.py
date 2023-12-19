@@ -433,8 +433,10 @@ def change_password( rfid ):
 
 # TODO /secure/chagne_passwd
 # TODO modify below TODOs to match evolved role/permission system
-# TODO /secure/add_access/<rfid>/<permission>
-# TODO /secure/remove_access/<rfid>/<permission>
+# TODO /secure/add_role/<rfid>/<role>
+# TODO /secure/remove_role/<rfid>/<role>
+# TODO /secure/add_permission/<role>/<permission>
+# TODO /secure/remove_permission/<role>/<permission>
 
 #@app.route('/', defaults={'path': ''})
 #@app.route( "/<path:path>" )
