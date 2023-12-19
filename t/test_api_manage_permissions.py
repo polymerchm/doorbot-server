@@ -37,9 +37,6 @@ class TestAPIManagePermissions( flask_unittest.ClientTestCase ):
         session.commit()
 
     def test_manage_permission( self, client ):
-        # TODO
-        return
-
         # User starts with no permission
         rv = client.get( '/secure/check_tag/' + USER1 + '/foo.permission' )
         self.assertStatus( rv, 403 )
@@ -47,6 +44,9 @@ class TestAPIManagePermissions( flask_unittest.ClientTestCase ):
         # Creates the role and the permission at once
         rv = client.put( '/secure/permission/foo.permission/foo_role' )
         self.assertStatus( rv, 201 )
+
+        # TODO
+        return 
 
         # User still has no permission
         rv = client.get( '/secure/check_tag/foo.permission/' + USER1 )

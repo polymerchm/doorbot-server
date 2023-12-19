@@ -5,6 +5,8 @@ import Doorbot.Config
 from Doorbot.SQLAlchemy import Location
 from Doorbot.SQLAlchemy import EntryLog
 from Doorbot.SQLAlchemy import Member
+from Doorbot.SQLAlchemy import Permission
+from Doorbot.SQLAlchemy import Role
 from Doorbot.SQLAlchemy import get_engine
 from Doorbot.SQLAlchemy import get_session
 from datetime import datetime
@@ -49,6 +51,21 @@ def set_error(
     response.set_data( json_data )
     return response
 
+# From https://stackoverflow.com/questions/2546207/does-sqlalchemy-have-an-equivalent-of-djangos-get-or-create
+def get_or_create(
+    session,
+    model,
+    **kwargs,
+):
+    instance = session.query( model ).filter_by( **kwargs ).first()
+    if instance:
+        return instance
+    else:
+        instance = model( **kwargs )
+        session.add( instance )
+        session.commit()
+        return instance
+
 
 @app.route( "/" )
 @app.route( "/index.html" )
@@ -77,6 +94,33 @@ def check_tag( tag ):
         response.status = 403
 
     return response
+
+@app.route( "/secure/check_tag/<tag>/<permission>",  methods = [ "GET" ] )
+#@auth.login_required
+def check_tag_by_permission( tag, permission ):
+    response = flask.make_response()
+    if not MATCH_INT.match( tag ):
+        response.status = 400
+        return response
+
+    session = get_session()
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    if None == member:
+        response.status = 404
+    elif member.active:
+        if member.has_permission( permission ):
+            response.status = 200
+        else:
+            response.status = 403
+    else:
+        response.status = 403
+
+    return response
+
 
 @app.route( "/entry/<tag>/<location>", methods = [ "GET" ] )
 #@auth.login_required
@@ -430,6 +474,17 @@ def change_password( rfid ):
             response.status = 200
 
     return response
+
+@app.route( "/secure/permission/<permission>/<role>", methods = [ "PUT" ] )
+def add_permission( permission, role ):
+    session = get_session()
+    role_obj = get_or_create( session, Role, name = role )
+    permission_obj = get_or_create( session, Permission, name = permission )
+
+    response = flask.make_response()
+    response.status = 201
+    return response
+
 
 # TODO /secure/chagne_passwd
 # TODO modify below TODOs to match evolved role/permission system
