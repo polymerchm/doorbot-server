@@ -350,7 +350,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/add_role/{rfid}/{role}:
+  /secure/role/{role}/{rfid}:
     put:
       summary: Give access to a role to the user
       description: Give access to a role to the user. If the role does not exist, it will be created.
@@ -358,7 +358,7 @@ paths:
         - rfid
         - permission
       responses:
-        '200':
+        '201':
           description: Role added to user
         '400':
           description: Invalid input
@@ -372,8 +372,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/remove_role/{rfid}/{role}:
-    put:
+    delete:
       summary: Remove access to a role from user
       description: Remove access to a role from the user
       tags:
@@ -394,15 +393,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/add_permission/{role}/{permission}:
+  /secure/permission/{permission}/{role}:
     put:
       summary: Add a permission to a role
       description: Add a permission to a role. If the role or permission does not exist, they will be created.
       tags:
-        - rfid
         - permission
       responses:
-        '200':
+        '201':
           description: Permission added to role
         '400':
           description: Invalid input
@@ -416,12 +414,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/remove_permission/{role}/{permission}:
-    put:
+    delete:
       summary: Remove a permission from a role
       description: Remove a permission from a role
       tags:
-        - rfid
         - permission
       responses:
         '200':
