@@ -45,7 +45,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /check_tag/{rfid}/{location}:
+  /v1/check_tag/{rfid}/{location}:
     get:
       tags:
         - rfid
@@ -74,7 +74,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /entry/{rfid}/{location}:
+  /v1/entry/{rfid}/{location}:
     get:
       tags:
         - rfid
@@ -103,7 +103,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/new_tag/{rfid}/{full_name}:
+  /v1/new_tag/{rfid}/{full_name}:
     put:
       tags:
         - rfid
@@ -119,7 +119,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '201':
           description: New RFID tag added
-  /secure/deactivate_tag/{rfid}:
+  /v1/deactivate_tag/{rfid}:
     post:
       tags:
         - rfid
@@ -135,7 +135,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/reactivate_tag/{rfid}:
+  /v1/reactivate_tag/{rfid}:
     post:
       tags:
         - rfid
@@ -151,7 +151,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/edit_tag/{current_rfid}/{new_rfid}:
+  /v1/edit_tag/{current_rfid}/{new_rfid}:
     post:
       tags:
         - rfid
@@ -167,7 +167,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/edit_name/{rfid}/{new_name}:
+  /v1/edit_name/{rfid}/{new_name}:
     post:
       tags:
         - rfid
@@ -183,7 +183,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/search_tags:
+  /v1/search_tags:
     get:
       summary: Search for tags
       description: Search for tags
@@ -220,7 +220,7 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/SearchMembersResults'
-  /secure/search_entry_log:
+  /v1/search_entry_log:
     get:
       summary: Search logs
       description: Search logs
@@ -269,7 +269,7 @@ paths:
                   type: object
                   additionalProperties:
                     type: boolean
-  /secure/dump_active_tags/{location}:
+  /v1/dump_active_tags/{location}:
     get:
       summary: Dump all currently active tags for the given location 
       description: Dump all currently active tags for the given location 
@@ -289,7 +289,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/change_passwd:
+  /v1/change_passwd:
     put:
       summary: Change password on signed in user
       description: Change password on signed in user
@@ -318,7 +318,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/change_passwd/{rfid}:
+  /v1/change_passwd/{rfid}:
     put:
       summary: Change password on the given user
       description: Change password the given user
@@ -350,7 +350,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/role/{role}/{rfid}:
+  /v1/role/{role}/{rfid}:
     put:
       summary: Give access to a role to the user
       description: Give access to a role to the user. If the role does not exist, it will be created.
@@ -393,7 +393,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /secure/permission/{permission}/{role}:
+  /v1/permission/{permission}/{role}:
     put:
       summary: Add a permission to a role
       description: Add a permission to a role. If the role or permission does not exist, they will be created.

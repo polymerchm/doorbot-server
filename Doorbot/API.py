@@ -486,12 +486,10 @@ def add_permission( permission, role ):
     return response
 
 
-# TODO /secure/chagne_passwd
-# TODO modify below TODOs to match evolved role/permission system
-# TODO /secure/add_role/<rfid>/<role>
-# TODO /secure/remove_role/<rfid>/<role>
-# TODO /secure/add_permission/<role>/<permission>
-# TODO /secure/remove_permission/<role>/<permission>
+# TODO /secure/change_passwd
+# TODO DELETE /secure/role/<role>/<tag>
+# TODO PUT /secure/permission/<permission>/<role>
+# TODO DELETE /secure/permission/<permission>/<role>
 
 #@app.route('/', defaults={'path': ''})
 #@app.route( "/<path:path>" )
