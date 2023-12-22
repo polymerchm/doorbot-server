@@ -81,10 +81,7 @@ def check_tag( tag ):
         return response
 
     session = get_session()
-    stmt = select( Member ).where(
-        Member.rfid == tag
-    )
-    member = session.scalars( stmt ).one_or_none()
+    member = Member.get_by_tag( tag, session )
 
     if None == member:
         response.status = 404
@@ -104,10 +101,7 @@ def check_tag_by_permission( tag, permission ):
         return response
 
     session = get_session()
-    stmt = select( Member ).where(
-        Member.rfid == tag
-    )
-    member = session.scalars( stmt ).one_or_none()
+    member = Member.get_by_tag( tag, session )
 
     if None == member:
         response.status = 404
@@ -131,10 +125,7 @@ def log_entry( tag, location ):
         return response
 
     session = get_session()
-    stmt = select( Member ).where(
-        Member.rfid == tag
-    )
-    member = session.scalars( stmt ).one_or_none()
+    member = Member.get_by_tag( tag, session )
 
     stmt = select( Location ).where(
         Location.name == location
@@ -193,10 +184,7 @@ def deactivate_tag( tag ):
         return response
 
     session = get_session()
-    stmt = select( Member ).where(
-        Member.rfid == tag
-    )
-    member = session.scalars( stmt ).one_or_none()
+    member = Member.get_by_tag( tag, session )
 
     member.active = False
     session.add( member )
@@ -214,10 +202,7 @@ def reactivate_tag( tag ):
         return response
 
     session = get_session()
-    stmt = select( Member ).where(
-        Member.rfid == tag
-    )
-    member = session.scalars( stmt ).one_or_none()
+    member = Member.get_by_tag( tag, session )
 
     member.active = True
     session.add( member )
@@ -238,10 +223,7 @@ def edit_tag( current_tag, new_tag ):
         return response
 
     session = get_session()
-    stmt = select( Member ).where(
-        Member.rfid == current_tag
-    )
-    member = session.scalars( stmt ).one_or_none()
+    member = Member.get_by_tag( current_tag, session )
 
     member.rfid = new_tag
     session.add( member )
@@ -259,10 +241,7 @@ def edit_name( tag, new_name ):
         return response
 
     session = get_session()
-    stmt = select( Member ).where(
-        Member.rfid == tag
-    )
-    member = session.scalars( stmt ).one_or_none()
+    member = Member.get_by_tag( tag, session )
 
     member.full_name = new_name
     session.add( member )
@@ -440,14 +419,11 @@ def dump_tags():
     return out
 
 
-@app.route( "/secure/change_passwd/<rfid>", methods = [ "PUT" ] )
+@app.route( "/secure/change_passwd/<tag>", methods = [ "PUT" ] )
 #@auth.login_required
-def change_password( rfid ):
+def change_password( tag ):
     session = get_session()
-    stmt = select( Member ).where(
-        Member.rfid == rfid
-    )
-    member = session.scalars( stmt ).one_or_none()
+    member = Member.get_by_tag( tag, session )
 
     response = flask.make_response()
 
@@ -493,10 +469,7 @@ def add_permission( permission, role ):
 def add_role_to_member( role, tag ):
     session = get_session()
 
-    stmt = select( Member ).where(
-        Member.rfid == tag
-    )
-    member = session.scalars( stmt ).one_or_none()
+    member = Member.get_by_tag( tag, session )
 
     response = flask.make_response()
     if None == member:
