@@ -489,6 +489,29 @@ def add_permission( permission, role ):
     response.status = 201
     return response
 
+@app.route( "/secure/role/<role>/<tag>", methods = [ "PUT" ] )
+def add_role_to_member( role, tag ):
+    session = get_session()
+
+    stmt = select( Member ).where(
+        Member.rfid == tag
+    )
+    member = session.scalars( stmt ).one_or_none()
+
+    response = flask.make_response()
+    if None == member:
+        response.status = 404
+    else:
+        role_obj = get_or_create( session, Role, name = role )
+        member.roles.append( role_obj )
+        session.add_all([ role_obj, member ])
+        session.commit()
+
+        response.status = 201
+
+    return response
+
+
 
 # TODO /secure/change_passwd
 # TODO DELETE /secure/role/<role>/<tag>

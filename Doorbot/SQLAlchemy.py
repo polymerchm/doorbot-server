@@ -138,6 +138,7 @@ class Member( Base ):
     )
 
 
+    # TODO get_by_tag() method
     def has_permission( self, permission ):
         session = get_session()
 
