@@ -10,6 +10,7 @@ from sqlalchemy import Table
 from sqlalchemy import ForeignKey
 from sqlalchemy import Boolean, Date, DateTime, String
 from sqlalchemy import create_engine
+from sqlalchemy import select
 from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.orm import Mapped
@@ -138,7 +139,13 @@ class Member( Base ):
     )
 
 
-    # TODO get_by_tag() method
+    def get_by_tag( tag, session ):
+        stmt = select( Member ).where(
+            Member.rfid == tag
+        )
+        member = session.scalars( stmt ).one_or_none()
+        return member
+
     def has_permission( self, permission ):
         session = get_session()
 
