@@ -487,4 +487,3 @@ class Permission( Base ):
 
         result = query.all()
         return result
-

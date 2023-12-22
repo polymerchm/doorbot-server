@@ -66,6 +66,14 @@ def get_or_create(
         session.commit()
         return instance
 
+def get(
+    session,
+    model,
+    **kwargs,
+):
+    instance = session.query( model ).filter_by( **kwargs ).first()
+    return instance
+
 
 @app.route( "/" )
 @app.route( "/index.html" )
@@ -463,6 +471,34 @@ def add_permission( permission, role ):
     response.status = 201
     return response
 
+@app.route( "/secure/permission/<permission>/<role>", methods = [ "DELETE" ] )
+def delete_permission( permission, role ):
+    session = get_session()
+    role_obj = get( session, Role, name = role )
+    permission_obj = get( session, Permission, name = permission )
+
+    response = flask.make_response()
+    if not role_obj:
+        set_error(
+            response = response,
+            msg = "Role " + role + " was not found",
+            status = 404,
+        )
+    elif not permission_obj:
+        set_error(
+            response = response,
+            msg = "Permission " + permission + " was not found",
+            status = 404,
+        )
+    else:
+        response.status = 200
+
+        role_obj.permissions.remove( permission_obj )
+        session.add_all([ role_obj, permission_obj ])
+        session.commit()
+
+    return response
+
 @app.route( "/secure/role/<role>/<tag>", methods = [ "PUT" ] )
 def add_role_to_member( role, tag ):
     session = get_session()
@@ -483,10 +519,9 @@ def add_role_to_member( role, tag ):
 
 
 
+
 # TODO /secure/change_passwd
 # TODO DELETE /secure/role/<role>/<tag>
-# TODO PUT /secure/permission/<permission>/<role>
-# TODO DELETE /secure/permission/<permission>/<role>
 
 #@app.route('/', defaults={'path': ''})
 #@app.route( "/<path:path>" )
