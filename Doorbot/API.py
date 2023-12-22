@@ -481,6 +481,10 @@ def add_permission( permission, role ):
     role_obj = get_or_create( session, Role, name = role )
     permission_obj = get_or_create( session, Permission, name = permission )
 
+    role_obj.permissions.append( permission_obj )
+    session.add_all([ role_obj, permission_obj ])
+    session.commit()
+
     response = flask.make_response()
     response.status = 201
     return response
