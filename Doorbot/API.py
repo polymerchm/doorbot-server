@@ -115,7 +115,6 @@ def check_tag_by_permission( tag, permission ):
 
     return response
 
-
 @app.route( "/entry/<tag>/<location>", methods = [ "GET" ] )
 #@auth.login_required
 def log_entry( tag, location ):
@@ -249,7 +248,6 @@ def edit_name( tag, new_name ):
 
     response.status = 201
     return response
-
 
 @app.route( "/secure/search_tags", methods = [ "GET" ] )
 #@auth.login_required
@@ -468,7 +466,6 @@ def add_permission( permission, role ):
 @app.route( "/secure/role/<role>/<tag>", methods = [ "PUT" ] )
 def add_role_to_member( role, tag ):
     session = get_session()
-
     member = Member.get_by_tag( tag, session )
 
     response = flask.make_response()

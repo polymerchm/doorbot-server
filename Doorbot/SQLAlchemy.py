@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 PASSWORD_TYPE_PLAINTEXT = "plaintext"
 PASSWORD_TYPE_BCRYPT = "bcrypt"
 
+# TODO docs
 
 __ENGINE = None
 
