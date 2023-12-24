@@ -87,23 +87,23 @@ class TestAPI( flask_unittest.ClientTestCase ):
         session.add_all( members )
         session.commit()
 
-        rv = client.get( '/entry/5678/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/v1/entry/5678/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
-        rv = client.get( '/entry/8765/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/v1/entry/8765/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 403 )
 
-        rv = client.get( '/entry/1111/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/v1/entry/1111/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
-        rv = client.get( '/entry/foobar/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/v1/entry/foobar/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 400 )
 
     def test_add_tag( self, client ):
         rv = client.get( '/check_tag/9012', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
-        rv = client.put( '/secure/new_tag/9012/foo', auth = USER_PASS )
+        rv = client.put( '/v1/new_tag/9012/foo', auth = USER_PASS )
         self.assertStatus( rv, 201 )
 
         rv = client.get( '/check_tag/9012', auth = USER_PASS )
@@ -123,13 +123,13 @@ class TestAPI( flask_unittest.ClientTestCase ):
         rv = client.get( '/check_tag/0123', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
-        rv = client.post( '/secure/deactivate_tag/0123', auth = USER_PASS )
+        rv = client.post( '/v1/deactivate_tag/0123', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
         rv = client.get( '/check_tag/0123', auth = USER_PASS )
         self.assertStatus( rv, 403 )
 
-        rv = client.post( '/secure/reactivate_tag/0123', auth = USER_PASS )
+        rv = client.post( '/v1/reactivate_tag/0123', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
         rv = client.get( '/check_tag/0123', auth = USER_PASS )
@@ -161,7 +161,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
         match_bar = re.compile( '.*,.*Bar.*', re.MULTILINE | re.DOTALL | re.I )
         match_quuux = re.compile( '.*,.*quuux.*', flags = re.I )
 
-        rv = client.get( '/secure/search_tags?name=Bar&offset=0&limit=1',
+        rv = client.get( '/v1/search_tags?name=Bar&offset=0&limit=1',
             auth = USER_PASS )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
@@ -169,7 +169,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
             "Matched bar",
         )
 
-        rv = client.get( '/secure/search_tags?name=bar&offset=0&limit=1',
+        rv = client.get( '/v1/search_tags?name=bar&offset=0&limit=1',
             auth = USER_PASS )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
@@ -177,7 +177,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
             "Matched bar in a case insensitive way",
         )
 
-        rv = client.get( '/secure/search_tags?name=quuux&offset=0&limit=1',
+        rv = client.get( '/v1/search_tags?name=quuux&offset=0&limit=1',
             auth = USER_PASS )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
@@ -210,7 +210,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
         match_cleanroom = re.compile( '.*,cleanroom\.door.*',
             re.MULTILINE | re.DOTALL )
 
-        rv = client.get( '/secure/search_entry_log?tag=09876&offset=0&limit=1',
+        rv = client.get( '/v1/search_entry_log?tag=09876&offset=0&limit=1',
             auth = USER_PASS )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
@@ -229,7 +229,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
         session.add_all( entries )
         session.commit()
 
-        rv = client.get( '/secure/search_entry_log?tag=09876&offset=0&limit=1',
+        rv = client.get( '/v1/search_entry_log?tag=09876&offset=0&limit=1',
             auth = USER_PASS )
         data = rv.data.decode( "UTF-8" )
         self.assertTrue(
@@ -275,7 +275,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 404 )
 
         # Create tag
-        rv = client.put( '/secure/new_tag/09017/foo', auth = USER_PASS )
+        rv = client.put( '/v1/new_tag/09017/foo', auth = USER_PASS )
         self.assertStatus( rv, 201 )
 
         rv = client.get( '/check_tag/09017', auth = USER_PASS )
@@ -285,7 +285,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 404 )
 
         # Edit tag
-        rv = client.post( '/secure/edit_tag/09017/19017', auth = USER_PASS )
+        rv = client.post( '/v1/edit_tag/09017/19017', auth = USER_PASS )
         self.assertStatus( rv, 201 )
 
         rv = client.get( '/check_tag/09017', auth = USER_PASS )
@@ -302,14 +302,14 @@ class TestAPI( flask_unittest.ClientTestCase ):
         self.assertStatus( rv, 404 )
 
         # Create tag
-        rv = client.put( '/secure/new_tag/29017/foo', auth = USER_PASS )
+        rv = client.put( '/v1/new_tag/29017/foo', auth = USER_PASS )
         self.assertStatus( rv, 201 )
 
         rv = client.get( '/check_tag/29017', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
         # Edit tag
-        rv = client.post( '/secure/edit_name/29017/bar', auth = USER_PASS )
+        rv = client.post( '/v1/edit_name/29017/bar', auth = USER_PASS )
         self.assertStatus( rv, 201 )
 
 

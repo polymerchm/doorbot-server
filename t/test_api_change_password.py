@@ -48,7 +48,7 @@ class TestAPIChangePassword( flask_unittest.ClientTestCase ):
 
         assert( member.check_password( USER_PASS[1] ), "Old password works" )
 
-        rv = client.put( '/secure/change_passwd/' + USER_PASS[0], data = {
+        rv = client.put( '/v1/change_passwd/' + USER_PASS[0], data = {
             "new_pass": USER_PASS[1] + "foo",
             "new_pass2": USER_PASS[1] + "foo",
         })

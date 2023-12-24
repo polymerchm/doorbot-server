@@ -93,7 +93,7 @@ class TestDumpTagsByLocationAPI( flask_unittest.ClientTestCase ):
         session.commit()
 
     def test_dump_active_tags_for_doors( self, client ):
-        rv = client.get( '/secure/dump_active_tags/back.door', auth = USER_PASS )
+        rv = client.get( '/v1/dump_active_tags/back.door', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
         data = rv.data.decode( "UTF-8" )
@@ -103,7 +103,7 @@ class TestDumpTagsByLocationAPI( flask_unittest.ClientTestCase ):
         assert( not RFID3 in data, "Third user inactive, can't open doors" )
 
     def test_dump_active_tags_for_wood( self, client ):
-        rv = client.get( '/secure/dump_active_tags/woodshop.tablesaw',
+        rv = client.get( '/v1/dump_active_tags/woodshop.tablesaw',
             auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
@@ -115,6 +115,6 @@ class TestDumpTagsByLocationAPI( flask_unittest.ClientTestCase ):
             "Third user has permission, but inactive, can't use woodshop" )
 
     def test_dump_active_tags_not_found( self, client ):
-        rv = client.get( '/secure/dump_active_tags/no_such.permission',
+        rv = client.get( '/v1/dump_active_tags/no_such.permission',
             auth = USER_PASS )
         self.assertStatus( rv, 404 )

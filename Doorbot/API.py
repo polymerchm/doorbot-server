@@ -100,7 +100,7 @@ def check_tag( tag ):
 
     return response
 
-@app.route( "/secure/check_tag/<tag>/<permission>",  methods = [ "GET" ] )
+@app.route( "/v1/check_tag/<tag>/<permission>",  methods = [ "GET" ] )
 #@auth.login_required
 def check_tag_by_permission( tag, permission ):
     response = flask.make_response()
@@ -123,7 +123,7 @@ def check_tag_by_permission( tag, permission ):
 
     return response
 
-@app.route( "/entry/<tag>/<location>", methods = [ "GET" ] )
+@app.route( "/v1/entry/<tag>/<location>", methods = [ "GET" ] )
 #@auth.login_required
 def log_entry( tag, location ):
     response = flask.make_response()
@@ -163,7 +163,7 @@ def log_entry( tag, location ):
 
     return response
 
-@app.route( "/secure/new_tag/<tag>/<full_name>", methods = [ "PUT" ] )
+@app.route( "/v1/new_tag/<tag>/<full_name>", methods = [ "PUT" ] )
 #@auth.login_required
 def new_tag( tag, full_name ):
     response = flask.make_response()
@@ -182,7 +182,7 @@ def new_tag( tag, full_name ):
     response.status = 201
     return response
 
-@app.route( "/secure/deactivate_tag/<tag>", methods = [ "POST" ] )
+@app.route( "/v1/deactivate_tag/<tag>", methods = [ "POST" ] )
 #@auth.login_required
 def deactivate_tag( tag ):
     response = flask.make_response()
@@ -200,7 +200,7 @@ def deactivate_tag( tag ):
     response.status = 200
     return response
 
-@app.route( "/secure/reactivate_tag/<tag>", methods = [ "POST" ] )
+@app.route( "/v1/reactivate_tag/<tag>", methods = [ "POST" ] )
 #@auth.login_required
 def reactivate_tag( tag ):
     response = flask.make_response()
@@ -218,7 +218,7 @@ def reactivate_tag( tag ):
     response.status = 200
     return response
 
-@app.route( "/secure/edit_tag/<current_tag>/<new_tag>", methods = [ "POST" ] )
+@app.route( "/v1/edit_tag/<current_tag>/<new_tag>", methods = [ "POST" ] )
 #@auth.login_required
 def edit_tag( current_tag, new_tag ):
     response = flask.make_response()
@@ -239,7 +239,7 @@ def edit_tag( current_tag, new_tag ):
     response.status = 201
     return response
 
-@app.route( "/secure/edit_name/<tag>/<new_name>", methods = [ "POST" ] )
+@app.route( "/v1/edit_name/<tag>/<new_name>", methods = [ "POST" ] )
 #@auth.login_required
 def edit_name( tag, new_name ):
     response = flask.make_response()
@@ -257,7 +257,7 @@ def edit_name( tag, new_name ):
     response.status = 201
     return response
 
-@app.route( "/secure/search_tags", methods = [ "GET" ] )
+@app.route( "/v1/search_tags", methods = [ "GET" ] )
 #@auth.login_required
 def search_tags():
     args = flask.request.args
@@ -314,7 +314,7 @@ def search_tags():
     response.set_data( out )
     return response
 
-@app.route( "/secure/search_entry_log", methods = [ "GET" ] )
+@app.route( "/v1/search_entry_log", methods = [ "GET" ] )
 #@auth.login_required
 def search_entry_log():
     args = flask.request.args
@@ -380,7 +380,7 @@ def search_entry_log():
     response.set_data( out )
     return response
 
-@app.route( "/secure/dump_active_tags/<permission>", methods = [ "GET" ] )
+@app.route( "/v1/dump_active_tags/<permission>", methods = [ "GET" ] )
 #@auth.login_required
 def dump_tags_for_permission( permission ):
     session = get_session()
@@ -425,7 +425,7 @@ def dump_tags():
     return out
 
 
-@app.route( "/secure/change_passwd/<tag>", methods = [ "PUT" ] )
+@app.route( "/v1/change_passwd/<tag>", methods = [ "PUT" ] )
 #@auth.login_required
 def change_password( tag ):
     session = get_session()
@@ -457,7 +457,7 @@ def change_password( tag ):
 
     return response
 
-@app.route( "/secure/permission/<permission>/<role>", methods = [ "PUT" ] )
+@app.route( "/v1/permission/<permission>/<role>", methods = [ "PUT" ] )
 def add_permission( permission, role ):
     session = get_session()
     role_obj = get_or_create( session, Role, name = role )
@@ -471,7 +471,7 @@ def add_permission( permission, role ):
     response.status = 201
     return response
 
-@app.route( "/secure/permission/<permission>/<role>", methods = [ "DELETE" ] )
+@app.route( "/v1/permission/<permission>/<role>", methods = [ "DELETE" ] )
 def delete_permission( permission, role ):
     session = get_session()
     role_obj = get( session, Role, name = role )
@@ -499,7 +499,7 @@ def delete_permission( permission, role ):
 
     return response
 
-@app.route( "/secure/role/<role>/<tag>", methods = [ "PUT" ] )
+@app.route( "/v1/role/<role>/<tag>", methods = [ "PUT" ] )
 def add_role_to_member( role, tag ):
     session = get_session()
     member = Member.get_by_tag( tag, session )
@@ -517,7 +517,7 @@ def add_role_to_member( role, tag ):
 
     return response
 
-@app.route( "/secure/role/<role>/<tag>", methods = [ "DELETE" ] )
+@app.route( "/v1/role/<role>/<tag>", methods = [ "DELETE" ] )
 def delete_role_from_member( role, tag ):
     session = get_session()
     role_obj = get( session, Role, name = role )
