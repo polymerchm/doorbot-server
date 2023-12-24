@@ -450,9 +450,11 @@ def change_password( tag ):
                 status = 400,
             )
         else:
-            member.set_password( pass1, {
-                "type": "plaintext",
-            })
+            password_config = Doorbot.Config.get( 'password_storage' )
+            member.set_password( pass1, password_config )
+            session.add( member )
+            session.commit()
+
             response.status = 200
 
     return response
