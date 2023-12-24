@@ -467,21 +467,6 @@ class Role( Base ):
 
         return result
 
-
-# TODO delete?
-class RoleUser( Base ):
-    __tablename__ = "role_users"
-
-    id: Mapped[ int ] = mapped_column( primary_key = True )
-    member_id: Mapped[ int ] = mapped_column(
-        ForeignKey( "members.id" ),
-        nullable = False,
-    )
-    role_id: Mapped[ int ] = mapped_column(
-        ForeignKey( "roles.id" ),
-        nullable = False,
-    )
-
 class Permission( Base ):
     """Permissions which can be attached to a member"""
     __tablename__ = "permissions"
