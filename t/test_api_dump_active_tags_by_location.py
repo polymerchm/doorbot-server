@@ -98,9 +98,9 @@ class TestDumpTagsByLocationAPI( flask_unittest.ClientTestCase ):
 
         data = rv.data.decode( "UTF-8" )
         data = json.loads( data )
-        assert( RFID1 in data, "First user can open doors" )
-        assert( RFID2 in data, "Second user can open doors" )
-        assert( not RFID3 in data, "Third user inactive, can't open doors" )
+        assert RFID1 in data, "First user can open doors"
+        assert RFID2 in data, "Second user can open doors"
+        assert not RFID3 in data, "Third user inactive, can't open doors"
 
     def test_dump_active_tags_for_wood( self, client ):
         rv = client.get( '/v1/dump_active_tags/woodshop.tablesaw',
@@ -109,10 +109,9 @@ class TestDumpTagsByLocationAPI( flask_unittest.ClientTestCase ):
 
         data = rv.data.decode( "UTF-8" )
         data = json.loads( data )
-        assert( RFID1 in data, "First user use woodshop" )
-        assert( not RFID2 in data, "Second user lacks permission for woodshop" )
-        assert( not RFID3 in data,
-            "Third user has permission, but inactive, can't use woodshop" )
+        assert RFID1 in data, "First user use woodshop"
+        assert not RFID2 in data, "Second user lacks permission for woodshop"
+        assert not RFID3 in data, "Third user has permission, but inactive, can't use woodshop"
 
     def test_dump_active_tags_not_found( self, client ):
         rv = client.get( '/v1/dump_active_tags/no_such.permission',
