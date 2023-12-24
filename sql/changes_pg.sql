@@ -8,9 +8,10 @@ CREATE TABLE roles (
 );
 
 CREATE TABLE role_members (
-    id SERIAL PRIMARY KEY NOT NULL,
     member_id INT REFERENCES members (id),
-    role_id INT REFERENCES roles (id)
+    role_id INT REFERENCES roles (id),
+
+    PRIMARY KEY( member_id, role_id )
 );
 CREATE INDEX ON role_members (member_id);
 CREATE INDEX ON role_members (role_id);
@@ -21,9 +22,10 @@ CREATE TABLE permissions (
 );
 
 CREATE TABLE role_permissions (
-    id SERIAL PRIMARY KEY NOT NULL,
     role_id INT REFERENCES roles (id),
-    permission_id INT REFERENCES permissions(id)
+    permission_id INT REFERENCES permissions(id),
+
+    PRIMARY KEY( role_id, permission_id )
 );
 CREATE INDEX ON role_permissions (role_id);
 CREATE INDEX ON role_permissions (permission_id);
