@@ -73,9 +73,6 @@ class TestAPIManagePermissions( flask_unittest.ClientTestCase ):
         rv = client.get( '/secure/check_tag/' + USER1 + '/foo.permission' )
         self.assertStatus( rv, 200 )
 
-        # TODO
-        return 
-
         # Remove role from user
         rv = client.delete( '/secure/role/foo_role/' + USER1 )
         self.assertStatus( rv, 200 )

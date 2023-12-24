@@ -399,6 +399,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Either the role or the member was not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /v1/permission/{permission}/{role}:
     put:
       summary: Add a permission to a role

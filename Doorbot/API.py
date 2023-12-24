@@ -517,11 +517,36 @@ def add_role_to_member( role, tag ):
 
     return response
 
+@app.route( "/secure/role/<role>/<tag>", methods = [ "DELETE" ] )
+def delete_role_from_member( role, tag ):
+    session = get_session()
+    role_obj = get( session, Role, name = role )
+    member_obj = get( session, Member, rfid = tag )
 
+    response = flask.make_response()
+    if not member_obj:
+        set_error(
+            response = response,
+            msg = "Member for RFID " + tag + " was not found",
+            status = 404,
+        )
+    elif not role_obj:
+        set_error(
+            response = response,
+            msg = "Role " + role + " was not found",
+            status = 404,
+        )
+    else:
+        response.status = 200
+
+        member_obj.roles.remove( role_obj )
+        session.add_all([ member_obj, role_obj ])
+        session.commit()
+
+    return response
 
 
 # TODO /secure/change_passwd
-# TODO DELETE /secure/role/<role>/<tag>
 
 #@app.route('/', defaults={'path': ''})
 #@app.route( "/<path:path>" )
