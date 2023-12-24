@@ -22,8 +22,6 @@ from sqlalchemy.orm import Session
 PASSWORD_TYPE_PLAINTEXT = "plaintext"
 PASSWORD_TYPE_BCRYPT = "bcrypt"
 
-# TODO docs
-
 __ENGINE = None
 
 def __connect_pg():
@@ -43,11 +41,15 @@ def __connect_pg():
     return engine
 
 def set_engine_sqlite():
+    """Set the engine to use SQLite instead of Pg"""
+
     global __ENGINE
     __ENGINE = create_engine( "sqlite://" )
     Base.metadata.create_all( __ENGINE )
 
 def get_engine():
+    """Get the SQLAlchemy engine"""
+
     global __ENGINE
 
     if __ENGINE is None:
@@ -56,6 +58,8 @@ def get_engine():
     return __ENGINE
 
 def get_session():
+    """Convenience function for getting an SQLAlchmey session"""
+
     engine = get_engine()
     session = Session( engine )
     return session
@@ -70,6 +74,7 @@ member_role_association = Table(
     Column( "member_id", ForeignKey( "members.id" ), primary_key = True ),
     Column( "role_id", ForeignKey( "roles.id" ), primary_key = True ),
 )
+""" Link table for a many-to-many assocation between members and roles"""
 
 role_permission_association = Table(
     "role_permissions",
@@ -77,8 +82,11 @@ role_permission_association = Table(
     Column( "role_id", ForeignKey( "roles.id" ), primary_key = True ),
     Column( "permission_id", ForeignKey( "permissions.id" ), primary_key = True ),
 )
+""" Link table for a many-to-many association between roles and permissions"""
 
 class Member( Base ):
+    """ Represents a member in the database"""
+
     __tablename__ = "members"
 
     id: Mapped[ int ] = mapped_column( primary_key = True )
@@ -141,6 +149,7 @@ class Member( Base ):
 
 
     def get_by_tag( tag, session ):
+        """Fetch a single member by RFID tag"""
         stmt = select( Member ).where(
             Member.rfid == tag
         )
@@ -148,6 +157,8 @@ class Member( Base ):
         return member
 
     def has_permission( self, permission ):
+        """Returns true if this member has access to the named permission"""
+
         session = get_session()
 
         if isinstance( permission, Permission ):
@@ -174,6 +185,7 @@ class Member( Base ):
         return result is not None
 
     def all_permissions( self ):
+        """Fetch a list of all permissions for this member"""
         session = get_session()
 
         result = session.query(
@@ -191,6 +203,7 @@ class Member( Base ):
         return result
 
     def all_roles( self ):
+        """Fetch a list of all roles for this member"""
         session = get_session()
 
         result = session.query(
@@ -208,6 +221,14 @@ class Member( Base ):
         password_plaintext,
         config: dict = {},
     ):
+        """Set a password on this member
+
+        The config passed should have a 'type' parameter, which identifies 
+        the name of the password encoding method. Other parameters are set 
+        based on this type. For example, bcrypt uses a 'difficulty' parameter,
+        which is an integer specifying the bcrypt difficulty level.
+        """
+
         password_type_full = self._password_name( config )
         encoded_password = self._encode_password( password_plaintext, config )
         self.password_type = password_type_full
@@ -254,6 +275,13 @@ class Member( Base ):
         self,
         password_plaintext: str,
     ):
+        """Checks if the plaintext password is correct for this user.
+
+        This will pull information out of the 'password_storage' config. It 
+        compares the stored type in the database with the type in the config.
+        If they do not match, then the password will be automatically 
+        re-encoded to the type specified in the configuration.
+        """
         if self._password_does_match( password_plaintext ):
             target_config = Doorbot.Config.get( 'password_storage' )
             current_config = self._password_current_config()
@@ -339,6 +367,7 @@ class Member( Base ):
             return False
 
 class Location( Base ):
+    """Represents a location, such as 'front.door' or 'woodshop.bandsaw'"""
     __tablename__ = "locations"
 
     id: Mapped[ int ] = mapped_column( primary_key = True )
@@ -352,6 +381,7 @@ class Location( Base ):
     )
 
 class EntryLog( Base ):
+    """A log of all scans"""
     __tablename__ = "entry_log"
 
     id: Mapped[ int ] = mapped_column( primary_key = True )
@@ -382,6 +412,7 @@ class EntryLog( Base ):
     )
 
 class Role( Base ):
+    """Roles which can be attached to a member"""
     __tablename__ = "roles"
 
     id: Mapped[ int ] = mapped_column( primary_key = True )
@@ -437,6 +468,7 @@ class Role( Base ):
         return result
 
 
+# TODO delete?
 class RoleUser( Base ):
     __tablename__ = "role_users"
 
@@ -451,6 +483,7 @@ class RoleUser( Base ):
     )
 
 class Permission( Base ):
+    """Permissions which can be attached to a member"""
     __tablename__ = "permissions"
 
     id: Mapped[ int ] = mapped_column( primary_key = True )
