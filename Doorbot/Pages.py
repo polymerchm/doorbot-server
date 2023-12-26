@@ -19,9 +19,11 @@ def error_page(
     msg,
     tmpl,
     status = 500,
+    page_name = "",
 ):
     output = render_template(
         tmpl,
+        page_name = page_name,
         has_errors = True,
         errors = [
             msg,
@@ -34,7 +36,7 @@ def error_page(
 
 @app.route( "/login", methods = [ "GET" ] )
 def login_form():
-    return render_template( 'login' )
+    return render_template( 'login', page_name = "Login" )
 
 @app.route( "/login", methods = [ "POST" ] )
 def login():
@@ -51,6 +53,7 @@ def login():
             response,
             "Incorrect Login",
             tmpl = "login",
+            page_name = "Login",
             status = 404,
         )
     elif not member.check_password( password ):
@@ -58,6 +61,7 @@ def login():
             response,
             "Incorrect Login",
             tmpl = "login",
+            page_name = "Login",
             status = 404,
         )
     else:
