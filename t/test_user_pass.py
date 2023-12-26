@@ -9,6 +9,12 @@ from sqlalchemy.orm import Session
 
 
 USER_PASS = ( "1234", "pass" )
+USER2 = "2345"
+
+KNOWN_PASS = "foobar123"
+APACHE_MD5_KNOWN_SALT = "123/abCD"
+APACHE_MD5_KNOWN_PASS = "$apr1$123/abCD$qVXnv7ltJwsWk3Y9JhLA1/"
+
 
 class TestAuth( unittest.TestCase ):
     @classmethod
@@ -57,3 +63,18 @@ class TestAuth( unittest.TestCase ):
         self.assertTrue( member.check_password( USER_PASS[1] ),
             "Password is still correct after reencoding" )
 
+    def test_apache_md5_pass( self ):
+        member = Doorbot.SQLAlchemy.Member(
+            full_name = "_tester",
+            rfid = USER2,
+            password_type = Doorbot.SQLAlchemy.PASSWORD_TYPE_APACHE_MD5,
+            encoded_password = APACHE_MD5_KNOWN_PASS,
+        )
+
+        session = Session( engine )
+        session.add( member )
+        session.commit()
+
+        assert member.check_password( KNOWN_PASS ), "Password checks out w/apache md5"
+
+        assert Doorbot.SQLAlchemy.PASSWORD_TYPE_APACHE_MD5 != member.password_type, "Password encodig type changed after checking it"

@@ -3,6 +3,7 @@ Next Version
 * Basic auth no longer handled by the frontend proxy
 ** Login page
 ** Session
+** Separate RFID from login name
 * Page to change password for the logged in user
 * Page to change password for any user
 ** Forces user to change their password at next login
@@ -31,6 +32,7 @@ Future Version
 ** Scan at location
 ** Change in access level
 * Entry log paginates using a GraphQL-style cursor
+* Entry log dates in local time
 * CSS theming
 
 

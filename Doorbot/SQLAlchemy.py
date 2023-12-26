@@ -2,6 +2,7 @@ import base64
 import bcrypt
 import hashlib
 import re
+import subprocess
 import Doorbot.Config
 from typing import List
 from typing import Optional
@@ -21,6 +22,7 @@ from sqlalchemy.orm import Session
 
 PASSWORD_TYPE_PLAINTEXT = "plaintext"
 PASSWORD_TYPE_BCRYPT = "bcrypt"
+PASSWORD_TYPE_APACHE_MD5 = "apache_md5"
 
 __ENGINE = None
 
@@ -362,9 +364,49 @@ class Member( Base ):
                 hashlib.sha256( password_plaintext ).digest()
             )
             return bcrypt.checkpw( hashed_pass, password_encoded )
+        elif PASSWORD_TYPE_APACHE_MD5 == password_type:
+            return self._password_does_match_apache_md5(
+                password_encoded, password_plaintext )
         else:
             # I dunno what it is. Assume it's wrong.
             return False
+
+    def _password_does_match_apache_md5(
+        self,
+        password_encoded,
+        password_plaintext,
+    ):
+        password_encoded = password_encoded.decode( 'utf-8' )
+        password_plaintext = password_plaintext.decode( 'utf-8' )
+
+
+        matched = re.match( r'^\$apr1\$([^\$]+)', password_encoded )
+        if matched:
+            salt = matched.group( 1 )
+        else:
+            # Doesn't seem to be a valid Apache MD5 password string, so fail
+            return False
+
+        # TODO This puts the password on the command line, where it could be 
+        # captured by 'ps aux' or some such. However, since this is a one 
+        # time thing for backwards compatibility, the threat is small.
+        cmd = [
+            "openssl",
+            "passwd",
+            "-apr1",
+            "-salt", salt,
+            password_plaintext,
+        ];
+        process = subprocess.run(
+            cmd,
+            stdout = subprocess.PIPE,
+        )
+        expected_passwd = process.stdout.decode( 'utf-8' ).rstrip()
+
+        # TODO Constant time matching algorithm. Or don't; this is only 
+        # used to convert some old passwords.
+        return expected_passwd == password_encoded
+
 
 class Location( Base ):
     """Represents a location, such as 'front.door' or 'woodshop.bandsaw'"""
