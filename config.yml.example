@@ -16,6 +16,12 @@ password_storage:
     bcrypt:
         difficulty: 10
 
+# Create key with:
+# python -c 'import secrets; print(secrets.token_hex())'
+session:
+  key:
+  life_minutes: 60
+
 build_id:
 build_branch:
 build_date:
