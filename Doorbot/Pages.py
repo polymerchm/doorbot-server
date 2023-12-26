@@ -9,6 +9,7 @@ from Doorbot.SQLAlchemy import get_engine
 from Doorbot.SQLAlchemy import get_session
 from datetime import datetime
 from flask import session
+from flask_stache import render_template
 from sqlalchemy import select
 from sqlalchemy.sql import text
 
@@ -21,7 +22,11 @@ def error_page(
 ):
     pass
 
-@app.route( "/login.html", methods = [ "POST" ] )
+@app.route( "/login", methods = [ "GET" ] )
+def login_form():
+    return render_template( 'login' )
+
+@app.route( "/login", methods = [ "POST" ] )
 def login():
     request = flask.request
     tag = request.form[ 'username' ]
