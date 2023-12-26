@@ -1,4 +1,5 @@
 import Doorbot.Config
+import flask
 from Doorbot.API import app
 from Doorbot.SQLAlchemy import Location
 from Doorbot.SQLAlchemy import EntryLog
@@ -8,7 +9,6 @@ from Doorbot.SQLAlchemy import Role
 from Doorbot.SQLAlchemy import get_engine
 from Doorbot.SQLAlchemy import get_session
 from datetime import datetime
-from flask import session
 from flask_stache import render_template
 from sqlalchemy import select
 from sqlalchemy.sql import text
@@ -20,7 +20,17 @@ def error_page(
     tmpl,
     status = 500,
 ):
-    pass
+    output = render_template(
+        tmpl,
+        has_errors = True,
+        errors = [
+            msg,
+        ],
+    )
+
+    response.status = status
+    response.set_data( output )
+    return response
 
 @app.route( "/login", methods = [ "GET" ] )
 def login_form():
@@ -40,14 +50,14 @@ def login():
         return error_page(
             response,
             "Incorrect Login",
-            tmpl = "login.html",
+            tmpl = "login",
             status = 404,
         )
     elif not member.check_password( password ):
         return error_page(
             response,
             "Incorrect Login",
-            tmpl = "login.html",
+            tmpl = "login",
             status = 404,
         )
     else:
