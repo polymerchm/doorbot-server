@@ -34,6 +34,10 @@ def error_page(
     response.set_data( output )
     return response
 
+@app.route( "/home", methods = [ "GET" ] )
+def home_page():
+    return render_template( 'home', page_name = "Home" )
+
 @app.route( "/login", methods = [ "GET" ] )
 def login_form():
     return render_template( 'login', page_name = "Login" )
@@ -66,4 +70,4 @@ def login():
         )
     else:
         flask.session[ 'username' ] = username
-        return flask.redirect( '/secure/index.html', code = 301 )
+        return flask.redirect( '/home', code = 301 )
