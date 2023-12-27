@@ -1,0 +1,43 @@
+{{> head }}
+
+{{> top_nav }}
+
+<form method="GET" action="/view-tags">
+<p>Search for name: <input type="text" id="search_name" name="name">
+    <input type="submit" value="Search"></p>
+</form>
+
+<form method="GET" action="/view-tags">
+<p>Search for RFID tag: <input type="text" id="search_rfid" name="rfid">
+    <input type="submit" value="Search"></p>
+</form>
+
+<table id="tag_table" border="1" cellpadding="2" cellspacing="2">
+    <thead>
+    <tr id="tag_table_header">
+        <th>Name</th>
+        <th>RFID Tag</th>
+        <th>Active</th>
+        <th>Found</th>
+        <th>MMS ID</th>
+        <th>Location</th>
+        <th>Entry Time</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    {{#tags}}
+    <tr>
+        <td>{{full_name}}</td>
+        <td>{{rfid}}</td>
+        <td>{{is_active_tag}}</td>
+        <td>{{is_found_tag}}<?td>
+        <td>{{mms_id}}</td>
+        <td>{{location}}</td>
+        <td>{{entry_time}}</td>
+    </tr>
+    {{/tags}}
+    </tbody>
+</table>
+
+{{> foot }}

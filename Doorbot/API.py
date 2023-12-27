@@ -74,6 +74,37 @@ def get(
     instance = session.query( model ).filter_by( **kwargs ).first()
     return instance
 
+def search_scan_logs( tag, offset, limit):
+    # People could scan an RFID that isn't in the system. We still want to 
+    # log that, but it means we can't explicitly link the member and entry_log 
+    # tables. This is a problem for SQLAlchemy, so don't bother, and use raw 
+    # SQL.
+    sql_params = {
+        "rfid": tag,
+        "offset": offset,
+        "limit": limit,
+    }
+    conn = get_engine().connect()
+    stmt = text( """
+        SELECT
+            members.full_name AS full_name
+            ,entry_log.rfid AS rfid
+            ,locations.name AS location
+            ,entry_log.entry_time AS entry_time
+            ,entry_log.is_active_tag AS is_active_tag
+            ,entry_log.is_found_tag AS is_found_tag
+        FROM entry_log
+        LEFT OUTER JOIN members ON entry_log.rfid = members.rfid
+        LEFT OUTER JOIN locations ON entry_log.location = locations.id
+        WHERE entry_log.rfid = :rfid
+        ORDER BY entry_log.entry_time DESC
+        LIMIT :limit
+        OFFSET :offset
+    """ )
+
+    logs = conn.execute( stmt, sql_params )
+    return logs
+
 
 @app.route( "/" )
 def redirect_home():
@@ -337,34 +368,7 @@ def search_entry_log():
     elif limit > 100:
         limit = 100
 
-    # People could scan an RFID that isn't in the system. We still want to 
-    # log that, but it means we can't explicitly link the member and entry_log 
-    # tables. This is a problem for SQLAlchemy, so don't bother, and use raw 
-    # SQL.
-    sql_params = {
-        "rfid": tag,
-        "offset": offset,
-        "limit": limit,
-    }
-    conn = get_engine().connect()
-    stmt = text( """
-        SELECT
-            members.full_name AS full_name
-            ,entry_log.rfid AS rfid
-            ,locations.name AS location
-            ,entry_log.entry_time AS entry_time
-            ,entry_log.is_active_tag AS is_active_tag
-            ,entry_log.is_found_tag AS is_found_tag
-        FROM entry_log
-        LEFT OUTER JOIN members ON entry_log.rfid = members.rfid
-        LEFT OUTER JOIN locations ON entry_log.location = locations.id
-        WHERE entry_log.rfid = :rfid
-        ORDER BY entry_log.entry_time DESC
-        LIMIT :limit
-        OFFSET :offset
-    """ )
-
-    logs = conn.execute( stmt, sql_params )
+    logs = search_scan_logs( tag, offset, limit )
 
     out = ''
     for entry in logs:

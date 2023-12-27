@@ -161,3 +161,31 @@ def add_tag():
             username = username,
             msg = "Added tag",
         )
+
+@app.route( "/search-scan-logs", methods = [ "GET" ] )
+@require_logged_in
+def search_scan_logs():
+    args = flask.request.args
+    name = args.get( 'name' )
+    rfid = args.get( 'rfid' )
+    offset = args.get( 'offset' )
+    limit = args.get( 'limit' )
+
+    offset = int( offset ) if offset else 0
+    limit = int( limit ) if limit else 0
+
+    # Clamp offset/limit
+    if offset < 0:
+        offset = 0
+    if limit <= 0:
+        limit = 50
+    elif limit > 100:
+        limit = 100
+
+    logs = Doorbot.API.search_scan_logs( rfid, offset, limit )
+
+    return render_template(
+        'search_scan_logs',
+        page_name = "Search Scan Logs",
+        tags = logs,
+    )

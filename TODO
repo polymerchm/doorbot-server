@@ -1,10 +1,10 @@
 Next Version
 ============
-** Forces user to change their password at next login
+* Oauth2 on API
 * HTML frontend
 ** No JavaScript at all
+** Test Scan Logs page on server with full dataset of scans
 ** Convert View RFID List
-** Convert View Entry Log
 ** Convert Test RFID
 * Deprecate endpoint for checking users:
 ** GET /secure/dump_active_tags
@@ -18,6 +18,7 @@ Future Version
 =============
 * Page to change password for the logged in user
 * Page to change password for any user
+** Force them to change their password at next login
 * Access control on users
 ** User can access any door
 ** User can access specific tools
