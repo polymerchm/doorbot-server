@@ -277,10 +277,11 @@ class Member( Base ):
             hashed_pass = base64.b64encode(
                 hashlib.sha256( password_plaintext.encode( 'utf-8' ) ).digest()
             )
+            # Need to decode utf-8 here to avoid a corrupt string
             encoded = bcrypt.hashpw(
                 hashed_pass,
                 bcrypt.gensalt( options[ 'bcrypt' ][ 'difficulty' ] ),
-            )
+            ).decode( 'utf-8' )
             return encoded
         else:
             return password_plaintext
