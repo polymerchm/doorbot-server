@@ -341,7 +341,7 @@ def search_tags():
     elif limit > 100:
         limit = 100
 
-    members = Doorbot.API.search_tag_list( name, rfid, offset, limit )
+    members = Doorbot.API.search_tag_list( name, tag, offset, limit )
 
     out = ''
     for member in members:

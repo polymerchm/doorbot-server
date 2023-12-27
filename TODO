@@ -7,12 +7,7 @@ Next Version
 ** Convert Test RFID
 ** Convert Edit RFID (tag search page)
 ** Convert Edit Name (tag search page)
-* Deprecate endpoint for checking users:
-** GET /secure/dump_active_tags
-** Now use a location-specific version:
-*** GET /v1/dump_active_tags/<location>
-*** The <location> is the same as what's sent in GET /entry/<tag>/<location>
-*** Dumps all tags that can access the given location; does so in the same format as the existing dump tag endpoint, except with the names of members instead of booleans
+** Pagination on Search Tags and Search Scans pages
 
 
 Future Version
