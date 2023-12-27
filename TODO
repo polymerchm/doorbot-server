@@ -2,8 +2,8 @@ Next Version
 ============
 * Oauth2 on API
 * HTML frontend
-** No JavaScript at all
-** Test Scan Logs page on server with full dataset of scans
+** Test the Scan Logs page on server with full dataset of scans
+** Test the Search Tags page on server with a full dataset of tags
 ** Convert Test RFID
 ** Convert Edit RFID (tag search page)
 ** Convert Edit Name (tag search page)

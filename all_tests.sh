@@ -2,4 +2,6 @@
 TEST=$1
 FLASK_APP=app
 cd t
-PYTHONPATH=./:../:${PYTHONPATH} python3 -m nose2 ${TEST}
+PYTHONPATH=./:../:${PYTHONPATH} coverage run --source .,../Doorbot -m nose2 ${TEST}
+
+coverage report
