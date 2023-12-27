@@ -184,8 +184,10 @@ def search_scan_logs():
 
     logs = Doorbot.API.search_scan_logs( rfid, offset, limit )
 
+    username = flask.session.get( 'username' )
     return render_template(
         'search_scan_logs',
         page_name = "Search Scan Logs",
         tags = logs,
+        username = username,
     )
