@@ -1,25 +1,29 @@
 Next Version
 ============
-* Page to change password for the logged in user
-* Page to change password for any user
 ** Forces user to change their password at next login
 * HTML frontend
 ** No JavaScript at all
+** Convert View RFID List
+** Convert View Entry Log
+** Convert Test RFID
+* Deprecate endpoint for checking users:
+** GET /secure/dump_active_tags
+** Now use a location-specific version:
+*** GET /v1/dump_active_tags/<location>
+*** The <location> is the same as what's sent in GET /entry/<tag>/<location>
+*** Dumps all tags that can access the given location; does so in the same format as the existing dump tag endpoint, except with the names of members instead of booleans
+
 
 Future Version
 =============
+* Page to change password for the logged in user
+* Page to change password for any user
 * Access control on users
 ** User can access any door
 ** User can access specific tools
 ** User can access admin functions (add new user, change access level, etc.)
 ** User can check if an RFID tag can access a location (for invididual doorbot/tool scanners)
 * Page for adding/removing access control on user
-* Deprecate this endpoint for checking users:
-** GET /secure/dump_active_tags
-* Now use a location-specific version:
-** GET /secure/dump_active_tags/<location>
-** The <location> is the same as what's sent in GET /entry/<tag>/<location>
-** Dumps all tags that can access the given location; does so in the same format as the existing dump tag endpoint, except with the names of members instead of booleans
 * Create users for each individual doorbot and tool scanner
 * Log everything
 ** Who did it
