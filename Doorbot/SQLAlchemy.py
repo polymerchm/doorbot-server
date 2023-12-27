@@ -142,6 +142,10 @@ class Member( Base ):
         String(),
         nullable = True,
     )
+    username: Mapped[ str ] = mapped_column(
+        String(),
+        nullable = True,
+    )
 
     roles: Mapped[ List[ "Role" ] ] = relationship(
         "Role",
@@ -154,6 +158,14 @@ class Member( Base ):
         """Fetch a single member by RFID tag"""
         stmt = select( Member ).where(
             Member.rfid == tag
+        )
+        member = session.scalars( stmt ).one_or_none()
+        return member
+
+    def get_by_username( username, session ):
+        """Fetch a single member by username"""
+        stmt = select( Member ).where(
+            Member.username == username
         )
         member = session.scalars( stmt ).one_or_none()
         return member
