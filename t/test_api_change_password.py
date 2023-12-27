@@ -43,7 +43,7 @@ class TestAPIChangePassword( flask_unittest.ClientTestCase ):
         session = Session( engine )
         member = Doorbot.SQLAlchemy.Member.get_by_tag( USER_PASS[0], session )
 
-        assert member.check_password( USER_PASS[1] ), "Old password works"
+        assert member.check_password( USER_PASS[1], session ), "Old password works"
 
         rv = client.put( '/v1/change_passwd/' + USER_PASS[0], data = {
             "new_pass": USER_PASS[1] + "foo",
@@ -54,5 +54,5 @@ class TestAPIChangePassword( flask_unittest.ClientTestCase ):
         # Fetch fresh user
         session = Session( engine )
         member = Doorbot.SQLAlchemy.Member.get_by_tag( USER_PASS[0], session )
-        assert not member.check_password( USER_PASS[1] ), "Old password no longer works"
-        assert member.check_password( USER_PASS[1] + "foo" ), "New password works"
+        assert not member.check_password( USER_PASS[1], session ), "Old password no longer works"
+        assert member.check_password( USER_PASS[1] + "foo", session ), "New password works"

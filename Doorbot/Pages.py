@@ -41,11 +41,11 @@ def login_form():
 @app.route( "/login", methods = [ "POST" ] )
 def login():
     request = flask.request
-    tag = request.form[ 'username' ]
+    username = request.form[ 'username' ]
     password = request.form[ 'password' ]
 
     session = get_session()
-    member = Member.get_by_tag( tag, session )
+    member = Member.get_by_username( username, session )
 
     response = flask.make_response()
     if not member:
@@ -56,7 +56,7 @@ def login():
             page_name = "Login",
             status = 404,
         )
-    elif not member.check_password( password ):
+    elif not member.check_password( password, session ):
         return error_page(
             response,
             "Incorrect Login",
@@ -65,5 +65,5 @@ def login():
             status = 404,
         )
     else:
-        flask.session[ 'rfid' ] = tag
+        flask.session[ 'username' ] = username
         return flask.redirect( '/secure/index.html', code = 301 )

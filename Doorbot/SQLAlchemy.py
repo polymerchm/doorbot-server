@@ -288,6 +288,7 @@ class Member( Base ):
     def check_password(
         self,
         password_plaintext: str,
+        session,
     ):
         """Checks if the plaintext password is correct for this user.
 
@@ -295,6 +296,8 @@ class Member( Base ):
         compares the stored type in the database with the type in the config.
         If they do not match, then the password will be automatically 
         re-encoded to the type specified in the configuration.
+
+        Needs a session, since it may change the database.
         """
         if self._password_does_match( password_plaintext ):
             target_config = Doorbot.Config.get( 'password_storage' )
@@ -310,6 +313,8 @@ class Member( Base ):
                     password_plaintext,
                     target_config,
                 )
+                session.add( self )
+                session.commit()
 
             return True
 

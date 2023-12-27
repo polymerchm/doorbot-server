@@ -46,21 +46,21 @@ class TestAuth( unittest.TestCase ):
         session.add( member )
         session.commit()
 
-        self.assertFalse( member.check_password( USER_PASS[1] + "foo" ),
+        self.assertFalse( member.check_password( USER_PASS[1] + "foo", session ),
             "Bad password is incorrect" )
         self.assertTrue(
             member.password_type == Doorbot.SQLAlchemy.PASSWORD_TYPE_PLAINTEXT,
             "Password encryption type is unchanged with bad password"
         )
 
-        self.assertTrue( member.check_password( USER_PASS[1] ),
+        self.assertTrue( member.check_password( USER_PASS[1], session ),
             "Password is correct" )
         self.assertTrue(
             member.password_type != Doorbot.SQLAlchemy.PASSWORD_TYPE_PLAINTEXT,
             "Password encryption type was changed after checking password" 
         )
 
-        self.assertTrue( member.check_password( USER_PASS[1] ),
+        self.assertTrue( member.check_password( USER_PASS[1], session ),
             "Password is still correct after reencoding" )
 
     def test_apache_md5_pass( self ):
@@ -75,6 +75,6 @@ class TestAuth( unittest.TestCase ):
         session.add( member )
         session.commit()
 
-        assert member.check_password( KNOWN_PASS ), "Password checks out w/apache md5"
+        assert member.check_password( KNOWN_PASS, session ), "Password checks out w/apache md5"
 
         assert Doorbot.SQLAlchemy.PASSWORD_TYPE_APACHE_MD5 != member.password_type, "Password encodig type changed after checking it"
