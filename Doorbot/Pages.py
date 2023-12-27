@@ -76,4 +76,4 @@ def login():
         )
     else:
         flask.session[ 'username' ] = username
-        return flask.redirect( '/home', code = 301 )
+        return home_page()

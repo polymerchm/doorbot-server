@@ -76,12 +76,11 @@ def get(
 
 
 @app.route( "/" )
-@app.route( "/home" )
 def redirect_home():
-    if flask.session.get( 'username' ):
-        return flask.redirect( '/home', code = 302 )
-    else:
+    if flask.session.get( 'username' ) is None:
         return flask.redirect( '/login', code = 302 )
+    else:
+        return flask.redirect( '/home', code = 302 )
 
 @app.route( "/check_tag/<tag>",  methods = [ "GET" ] )
 #@auth.login_required
