@@ -14,7 +14,8 @@ CREATE TABLE members (
     entry_type TEXT NOT NULL,
     notes TEXT,
     password_type TEXT,
-    encoded_password TEXT
+    encoded_password TEXT,
+    username TEXT UNIQUE
 );
 CREATE INDEX members_full_name_trgm_idx ON members
     USING gist (full_name gist_trgm_ops);

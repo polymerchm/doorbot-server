@@ -1,6 +1,6 @@
 ALTER TABLE members ADD COLUMN password_type TEXT;
 ALTER TABLE members ADD COLUMN encoded_password TEXT;
-ALTER TABLE members ADD COLUMN username TEXT;
+ALTER TABLE members ADD COLUMN username TEXT UNIQUE;
 
 
 CREATE TABLE roles (
