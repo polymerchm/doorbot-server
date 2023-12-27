@@ -34,7 +34,16 @@ def error_page(
     response.set_data( output )
     return response
 
+def require_logged_in( func ):
+    def check():
+        if flask.session.get( 'username' ) is None:
+            return login_form([ "You must be logged in to access this page" ])
+        else:
+            return func()
+    return check
+
 @app.route( "/home", methods = [ "GET" ] )
+@require_logged_in
 def home_page():
     username = flask.session.get( 'username' )
 
@@ -45,8 +54,15 @@ def home_page():
     )
 
 @app.route( "/login", methods = [ "GET" ] )
-def login_form():
-    return render_template( 'login', page_name = "Login" )
+def login_form( errors = [] ):
+    has_error = True if errors else False
+
+    return render_template(
+        'login',
+        page_name = "Login",
+        has_errors = has_error,
+        errors = errors,
+    )
 
 @app.route( "/login", methods = [ "POST" ] )
 def login():
@@ -81,4 +97,4 @@ def login():
 @app.route( "/logout" )
 def logout():
     flask.session[ 'username' ] = None
-    return login_form()
+    return login_form([ "You have been logged out" ])
