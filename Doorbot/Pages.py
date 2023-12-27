@@ -77,3 +77,8 @@ def login():
     else:
         flask.session[ 'username' ] = username
         return home_page()
+
+@app.route( "/logout" )
+def logout():
+    flask.session[ 'username' ] = None
+    return login_form()
