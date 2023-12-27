@@ -36,7 +36,13 @@ def error_page(
 
 @app.route( "/home", methods = [ "GET" ] )
 def home_page():
-    return render_template( 'home', page_name = "Home" )
+    username = flask.session.get( 'username' )
+
+    return render_template(
+        'home',
+        page_name = "Home",
+        username = username,
+    )
 
 @app.route( "/login", methods = [ "GET" ] )
 def login_form():

@@ -76,12 +76,12 @@ def get(
 
 
 @app.route( "/" )
-@app.route( "/index.html" )
+@app.route( "/home" )
 def redirect_home():
-    if flask.session[ 'rfid' ]:
-        return flask.redirect( '/secure/index.html', code = 301 )
+    if flask.session.get( 'username' ):
+        return flask.redirect( '/home', code = 302 )
     else:
-        return flask.redirect( '/login.html', code = 301 )
+        return flask.redirect( '/login', code = 302 )
 
 @app.route( "/check_tag/<tag>",  methods = [ "GET" ] )
 #@auth.login_required
