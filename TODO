@@ -3,7 +3,6 @@ Next Version
 * Basic auth no longer handled by the frontend proxy
 ** Login page
 ** Session
-** Separate RFID from login name
 * Page to change password for the logged in user
 * Page to change password for any user
 ** Forces user to change their password at next login
