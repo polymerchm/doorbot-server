@@ -4,8 +4,9 @@ Next Version
 * HTML frontend
 ** No JavaScript at all
 ** Test Scan Logs page on server with full dataset of scans
-** Convert View RFID List
 ** Convert Test RFID
+** Convert Edit RFID (tag search page)
+** Convert Edit Name (tag search page)
 * Deprecate endpoint for checking users:
 ** GET /secure/dump_active_tags
 ** Now use a location-specific version:

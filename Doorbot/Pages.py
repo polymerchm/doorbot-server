@@ -166,7 +166,6 @@ def add_tag():
 @require_logged_in
 def search_scan_logs():
     args = flask.request.args
-    name = args.get( 'name' )
     rfid = args.get( 'rfid' )
     offset = args.get( 'offset' )
     limit = args.get( 'limit' )
@@ -189,5 +188,46 @@ def search_scan_logs():
         'search_scan_logs',
         page_name = "Search Scan Logs",
         tags = logs,
+        username = username,
+    )
+
+@app.route( "/view-tag-list", methods = [ "GET" ] )
+@require_logged_in
+def view_tag_list():
+    args = flask.request.args
+    name = args.get( 'search_name' )
+    rfid = args.get( 'search_rfid' )
+    offset = args.get( 'offset' )
+    limit = args.get( 'limit' )
+
+    offset = int( offset ) if offset else 0
+    limit = int( limit ) if limit else 0
+
+    # Clamp offset/limit
+    if offset < 0:
+        offset = 0
+    if limit < 0:
+        limit = 50
+    elif limit < 1:
+        limit = 100
+    elif limit > 100:
+        limit = 100
+
+    members = Doorbot.API.search_tag_list( name, rfid, offset, limit )
+    formatted_members = list( map(
+        lambda member: {
+            "full_name": member.full_name,
+            "tag": member.rfid,
+            "is_active": member.active,
+            "mms_id": member.mms_id if member.mms_id else "",
+        },
+        members,
+    ))
+
+    username = flask.session.get( 'username' )
+    return render_template(
+        'view_tag_list',
+        page_name = "Search Tag List",
+        tags = formatted_members,
         username = username,
     )

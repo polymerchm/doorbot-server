@@ -1,0 +1,54 @@
+{{> head }}
+
+{{> top_nav }}
+
+<form method="GET" action="/view-tag-list">
+<p>Search for name: <input type="text" id="search_name" name="search_name">
+    <input type="submit" value="Search"></p>
+</form>
+
+<form method="GET" action="/view-tag-list">
+<p>Search for RFID tag: <input type="text" id="search_rfid" name="search_rfid">
+    <input type="submit" value="Search"></p>
+</form>
+
+<table id="tag_table" border="1" cellpadding="2" cellspacing="2">
+    <thead>
+    <tr id="tag_table_header">
+        <th>Name</th>
+        <th>RFID Tag</th>
+        <th>Active</th>
+        <th>MMS ID</th>
+        <th>&nbsp;</th>
+        <th>&nbsp;</th>
+        <th>&nbsp;</th>
+    </tr>
+    </thead>
+
+    {{#tags}}
+    <tbody>
+    <tr>
+        <td>{{full_name}}</td>
+        <td>{{tag}}</td>
+        <td>{{is_active}}</td>
+        <td>{{mms_id}}</td>
+        <td>
+            <form action="/activate-tag" method="POST">
+                <input type="hidden" name="tag" value="{{tag}}">
+                <input type="hidden" name="activate" value="{{#is_active}}0{{/is_active}}{{^is_active}}1{{/is_active}}">
+                <input type="submit" value="{{#is_active}}Deactivate{{/is_active}}{{^is_active}}Activate{{/is_active}}">
+            </form>
+        </td>
+        <td>
+            <a href="/edit-tag?current_tag={{tag}}">Edit Tag</a>
+        </td>
+        <td>
+            <a href="/edit-name?current_tag={{tag}}&current_name={{full_name}}">Edit Name</a>
+        </td>
+    </tr>
+    </tbody>
+    {{/tags}}
+
+</table>
+
+{{> foot }}

@@ -105,6 +105,35 @@ def search_scan_logs( tag, offset, limit):
     logs = conn.execute( stmt, sql_params )
     return logs
 
+def search_tag_list(
+    name = None,
+    tag = None,
+    offset = 0,
+    limit = 100,
+):
+    stmt = select( Member )
+    if name:
+        stmt = stmt.where(
+            Member.full_name.ilike( '%' + name + '%' )
+        )
+    if tag:
+        stmt = stmt.where(
+            Member.rfid == tag,
+        )
+
+    stmt = stmt.order_by(
+        'join_date'
+    ).limit(
+        limit
+    ).offset(
+        offset
+    )
+
+    session = get_session()
+    members = session.scalars( stmt ).all()
+
+    return members
+
 
 @app.route( "/" )
 def redirect_home():
@@ -312,26 +341,7 @@ def search_tags():
     elif limit > 100:
         limit = 100
 
-    stmt = select( Member )
-    if name:
-        stmt = stmt.where(
-            Member.full_name.ilike( '%' + name + '%' )
-        )
-    if tag:
-        stmt = stmt.where(
-            Member.rfid == tag,
-        )
-
-    stmt = stmt.order_by(
-        'join_date'
-    ).limit(
-        limit
-    ).offset(
-        offset
-    )
-
-    session = get_session()
-    members = session.scalars( stmt ).all()
+    members = Doorbot.API.search_tag_list( name, rfid, offset, limit )
 
     out = ''
     for member in members:
