@@ -1,0 +1,15 @@
+{{> head }}
+
+{{> top_nav }}
+
+<form action="/edit-tag" method="POST">
+<p>Current Tag #: <input
+    type="text"
+    id="current_tag"
+    name="current_tag"
+    value="{{current_tag}}"></p>
+<p>New Tag #: <input type="text" id="new_tag" name="new_tag"></p>
+<p><input type="submit" value="Change Tag"></p>
+</form>
+
+{{> foot }}

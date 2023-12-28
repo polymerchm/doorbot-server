@@ -231,3 +231,68 @@ def view_tag_list():
         tags = formatted_members,
         username = username,
     )
+
+@app.route( "/edit-tag", methods = [ "GET" ] )
+@require_logged_in
+def edit_tag_form():
+    username = flask.session.get( 'username' )
+
+    current_tag = flask.request.args.get( 'current_tag' )
+    current_tag = current_tag if current_tag else ''
+
+    return render_template(
+        'edit_tag',
+        page_name = "Edit Tag",
+        username = username,
+        current_tag = current_tag,
+    )
+
+@app.route( "/edit-tag", methods = [ "POST" ] )
+@require_logged_in
+def edit_tag_submit():
+    username = flask.session.get( 'username' )
+
+    current_tag = flask.request.form[ 'current_tag' ]
+    new_tag = flask.request.form[ 'new_tag' ]
+
+    errors = []
+    if not Doorbot.API.MATCH_INT.match( current_tag ):
+        errors.append( "Current tag should be a series of digits" )
+    if not Doorbot.API.MATCH_INT.match( new_tag ):
+        errors.append( "New tag should be a series of digits" )
+
+    response = flask.make_response()
+    if errors:
+        return error_page(
+            response,
+            tmpl = 'edit_tag',
+            msgs = errors,
+            status = 400,
+            page_name = "Edit Tag",
+            username = username,
+        )
+
+    session = get_session()
+    member = Member.get_by_tag( current_tag, session )
+
+    if not member:
+        return error_page(
+            response,
+            tmpl = 'edit_tag',
+            msgs = [ "Cannot find member for RFID " + current_tag ],
+            status = 400,
+            page_name = "Edit Tag",
+            username = username,
+        )
+
+    member.rfid = new_tag
+    session.add( member )
+    session.commit()
+
+    return render_template(
+        'edit_tag',
+        page_name = "Edit Tag",
+        username = username,
+        current_tag = new_tag,
+        msg = "Changed RFID tag",
+    )
