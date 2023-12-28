@@ -363,3 +363,55 @@ def edit_name_submit():
         full_name = new_name,
         msg = "Changed member name",
     )
+
+@app.route( "/activate-tag", methods = [ "POST" ] )
+@require_logged_in
+def activate_tag_submit():
+    username = flask.session.get( 'username' )
+
+    tag = flask.request.form[ 'tag' ]
+    activate = int( flask.request.form[ 'activate' ] )
+
+    page_name = "Activate Tag" if activate else "Deactivate Tag"
+
+    errors = []
+    if not Doorbot.API.MATCH_INT.match( tag ):
+        errors.append( "Tag should be a series of digits" )
+
+    response = flask.make_response()
+    if errors:
+        return error_page(
+            response,
+            tmpl = 'activate_tag',
+            msgs = errors,
+            status = 400,
+            page_name = page_name,
+            username = username,
+        )
+
+    session = get_session()
+    member = Member.get_by_tag( tag, session )
+
+    if not member:
+        return error_page(
+            response,
+            tmpl = 'activate_tag',
+            msgs = [ "Cannot find member for RFID " + current_tag ],
+            status = 400,
+            page_name = page_name,
+            username = username,
+        )
+
+    member.active = True if activate else False
+    session.add( member )
+    session.commit()
+
+    action = "Activated tag" if activate else "Deactivated tag"
+    action = action + " " + tag + " for " + member.full_name
+
+    return render_template(
+        'activate_tag',
+        page_name = page_name,
+        username = username,
+        msg = action,
+    )
