@@ -1,0 +1,15 @@
+{{> head }}
+
+{{> top_nav }}
+
+<form action="/edit-name" method="POST">
+<p>Current Tag #: <input
+    type="text"
+    id="current_tag"
+    name="current_tag"
+    value="{{current_tag}}"></p>
+<p>New Name: <input type="text" id="new_name" name="new_name" value="{{full_name}}"></p>
+<p><input type="submit" value="Change Name"></p>
+</form>
+
+{{> foot }}
