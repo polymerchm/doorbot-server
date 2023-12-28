@@ -30,9 +30,9 @@ MATCH_NAME = re.compile( ''.join([
 ]) )
 
 
-app = flask.Flask( __name__,
+app = flask.Flask( "rfid_app",
     static_url_path = '',
-    static_folder = '../static',
+    static_folder = 'rfid_app/static/',
 )
 
 def set_error(

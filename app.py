@@ -4,8 +4,8 @@ import psycopg2
 import Doorbot.Config
 import Doorbot.Pages
 import Doorbot.SQLAlchemy
-from datetime import timedelta
 from Doorbot.API import app
+from datetime import timedelta
 
 
 session_conf = Doorbot.Config.get( 'session' )
@@ -13,6 +13,7 @@ app.secret_key = session_conf[ 'key' ]
 app.config[ 'PERMANENT_SESSION_LIFETIME' ] = timedelta(
     minutes = session_conf[ 'life_minutes' ]
 )
+
 
 if __name__ == "__main__":
     app.run( host = "0.0.0.0" )
