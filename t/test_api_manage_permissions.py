@@ -17,6 +17,7 @@ USER1 = "1234"
 
 class TestAPIManagePermissions( flask_unittest.ClientTestCase ):
     app = Doorbot.API.app
+    app.config[ 'is_testing' ] = True
     engine = None
 
     @classmethod

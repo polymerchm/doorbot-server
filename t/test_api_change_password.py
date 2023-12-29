@@ -17,6 +17,7 @@ USER_PASS = ( "user", "pass" )
 
 class TestAPIChangePassword( flask_unittest.ClientTestCase ):
     app = Doorbot.API.app
+    app.config[ 'is_testing' ] = True
     engine = None
 
     @classmethod

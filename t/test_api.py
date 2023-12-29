@@ -17,6 +17,7 @@ USER_PASS = ( "user", "pass" )
 
 class TestAPI( flask_unittest.ClientTestCase ):
     app = Doorbot.API.app
+    app.config[ 'is_testing' ] = True
     engine = None
 
     @classmethod
@@ -87,16 +88,16 @@ class TestAPI( flask_unittest.ClientTestCase ):
         session.add_all( members )
         session.commit()
 
-        rv = client.get( '/v1/entry/5678/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/secure/entry/5678/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
-        rv = client.get( '/v1/entry/8765/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/secure/entry/8765/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 403 )
 
-        rv = client.get( '/v1/entry/1111/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/secure//entry/1111/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
-        rv = client.get( '/v1/entry/foobar/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/secure/entry/foobar/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 400 )
 
     def test_add_tag( self, client ):

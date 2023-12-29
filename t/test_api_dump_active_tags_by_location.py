@@ -20,6 +20,7 @@ RFID3 = "3456"
 
 class TestDumpTagsByLocationAPI( flask_unittest.ClientTestCase ):
     app = Doorbot.API.app
+    app.config[ 'is_testing' ] = True
     engine = None
 
     @classmethod
