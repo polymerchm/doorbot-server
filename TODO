@@ -4,7 +4,6 @@ Next Version
 ** Test the Scan Logs page on server with full dataset of scans
 ** Test the Search Tags page on server with a full dataset of tags
 ** Pagination on Search Tags and Search Scans pages
-* Block new API endpoints outside of development work
 
 
 Future Version
