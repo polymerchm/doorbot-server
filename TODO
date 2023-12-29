@@ -1,14 +1,18 @@
 Next Version
 ============
-* Oauth2 on API
+* Setup instructions in README.md
 * HTML frontend
 ** Test the Scan Logs page on server with full dataset of scans
 ** Test the Search Tags page on server with a full dataset of tags
 ** Pagination on Search Tags and Search Scans pages
+* Block new API endpoints outside of development work
 
 
 Future Version
 =============
+* Rebuild flask directory layout
+* HTML Tests
+* Oauth2 on API
 * Page to change password for the logged in user
 * Page to change password for any user
 ** Force them to change their password at next login
