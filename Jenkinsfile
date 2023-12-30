@@ -16,6 +16,15 @@ node {
         try {
             app = docker.build( "doorbot" )
 
+            // Create cookie session key
+            // Note that this means existing sessions will be invalidated 
+            // with each release
+            session_key = (
+                script: 'python -c \'import secrets; print(secrets.token_hex())\'',
+                returnStdout: true
+            ).trim()
+
+
             app.inside {
                 // Build config file
                 sh 'rm -f config.yml'
@@ -34,6 +43,7 @@ node {
                     conf.postgresql.database = 'doorbot'
                     conf.postgresql.host = 'host.docker.internal'
                     conf.postgresql.port = 5432
+                    conf.session.key = session_key
                     conf.build_id = env.BUILD_ID
                     conf.build_branch = env.BRANCH_NAME
                     conf.build_date = env.BUILD_TIMESTAMP
