@@ -19,7 +19,7 @@ node {
             // Create cookie session key
             // Note that this means existing sessions will be invalidated 
             // with each release
-            session_key = (
+            session_key = sh (
                 script: 'python -c \'import secrets; print(secrets.token_hex())\'',
                 returnStdout: true
             ).trim()
