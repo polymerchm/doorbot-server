@@ -30,12 +30,6 @@ node {
         try {
             app = docker.build( "doorbot" )
 
-            def session_key = sh (
-                script: 'python3 -c \'import secrets; print(secrets.token_hex())\'',
-                returnStdout: true
-            ).trim()
-
-
             app.inside {
                 // Build config file
                 sh 'rm -f config.yml'
