@@ -1,24 +1,17 @@
-Next Version
-============
+# Next Version
 * HTML frontend
 ** Test the Scan Logs page on server with full dataset of scans
 ** Test the Search Tags page on server with a full dataset of tags
 ** Pagination on Search Tags and Search Scans pages
 
 
-Future Version
-=============
+# Future Version
 * Rebuild flask directory layout
 * HTML Tests
 * Oauth2 on API
 * Page to change password for the logged in user
 * Page to change password for any user
 ** Force them to change their password at next login
-* Access control on users
-** User can access any door
-** User can access specific tools
-** User can access admin functions (add new user, change access level, etc.)
-** User can check if an RFID tag can access a location (for invididual doorbot/tool scanners)
 * Page for adding/removing access control on user
 * Create users for each individual doorbot and tool scanner
 * Log everything
@@ -32,23 +25,18 @@ Future Version
 * CSS theming
 
 
-* MMS -> DB robustness
-** If a member exists in both places, but with different RFID keys, 
+# MMS -> DB robustness
+* If a member exists in both places, but with different RFID keys, 
    the build_active_member_cache.py script will consider the member to not 
    be in the database. The add_members_to_db.py script will then try to add 
    the member, and fail due to duplicate MMS IDs. How to handle?
-** Could catch DB error and ignore it
-** Could check by MMS ID instead of RFID, and filter it into a list of members 
+* Could catch DB error and ignore it
+* Could check by MMS ID instead of RFID, and filter it into a list of members 
    with mismatched RFID
 
-* Documentation
-** README on developer setup
-** Wiki page on broad overview of system
-** Code docs
-* API
-** Gather liabilty form emails
-** Mark liability form emails as set
-** Alter tag API (not based on existing API)
+# Documentation
+* Wiki page on broad overview of system
+* Code docs
 
 # Later(tm)
 * Tests with Pg should create a whole new database
