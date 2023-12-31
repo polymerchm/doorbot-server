@@ -3,6 +3,7 @@ import bcrypt
 import hashlib
 import re
 import subprocess
+import urllib
 import Doorbot.Config
 from typing import List
 from typing import Optional
@@ -33,6 +34,9 @@ def __connect_pg():
     database = pg_conf[ 'database' ]
     host = pg_conf[ 'host' ]
     port = pg_conf[ 'port' ]
+
+    # Password may have symbols in it that need to be URL encoded
+    passwd = urllib.parse.quote( passwd )
 
     conn_str = "postgresql+psycopg2://" + \
         user + ":" + passwd + \
