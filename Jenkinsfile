@@ -18,7 +18,7 @@ node {
         // with each release
         // Based on https://shunchaowang.wordpress.com/2015/03/10/generate-random-string-with-groovy/
         // But modified with a secure random generator
-        def random = new SecureRandom()
+        def random = new java.security.SecureRandom()
         def pool = [ 'a'..'f', 0..9 ].flatten()
         def randomChars = (1..64).collect {
             pool[random.nextInt(pool.size())]
