@@ -13,13 +13,24 @@ node {
             message: "Started build of doorbot server [build #${env.BUILD_NUMBER}, branch ${env.BRANCH_NAME}] (<${env.BUILD_URL}|Open>)"
         )
 
+        // Create cookie session key
+        // Note that this means existing sessions will be invalidated 
+        // with each release
+        // Based on https://shunchaowang.wordpress.com/2015/03/10/generate-random-string-with-groovy/
+        // But modified with a secure random generator
+        def random = new SecureRandom()
+        def pool = [ 'a'..'f', 0..9 ].flatten()
+        def randomChars = (1..64).collect {
+            pool[random.nextInt(pool.size())]
+        }
+        def session_key = randomChars.join()
+
+
+
         try {
             app = docker.build( "doorbot" )
 
-            // Create cookie session key
-            // Note that this means existing sessions will be invalidated 
-            // with each release
-            session_key = sh (
+            def session_key = sh (
                 script: 'python3 -c \'import secrets; print(secrets.token_hex())\'',
                 returnStdout: true
             ).trim()
