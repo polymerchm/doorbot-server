@@ -23,7 +23,7 @@ node {
         def randomChars = (1..64).collect {
             pool[random.nextInt(pool.size())]
         }
-        def session_key = randomChars.join()
+        def session_key = randomChars.join("")
 
 
 
