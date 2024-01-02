@@ -172,6 +172,7 @@ def search_scan_logs():
 
     # Normalize the data
     rfid = "" if rfid is None else rfid
+    rfid = rfid.strip()
 
     offset = int( offset ) if offset else 0
     limit = int( limit ) if limit else 0
