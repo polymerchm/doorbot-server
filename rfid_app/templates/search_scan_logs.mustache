@@ -40,4 +40,12 @@
     </tbody>
 </table>
 
+<form method="GET" action="/search-scan-logs">
+    <input type="hidden" name="search_rfid" value="{{rfid}}">
+    <input type="hidden" name="limit" value="{{limit}}">
+    <input type="hidden" name="offset" value="{{next_offset}}">
+
+    <p><input type="submit" value="Next"></p>
+</form>
+
 {{> foot }}

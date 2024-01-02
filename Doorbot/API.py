@@ -80,10 +80,14 @@ def search_scan_logs( tag, offset, limit):
     # tables. This is a problem for SQLAlchemy, so don't bother, and use raw 
     # SQL.
     sql_params = {
-        "rfid": tag,
         "offset": offset,
         "limit": limit,
     }
+    where_clause = ""
+    if tag:
+        where_clause = "WHERE entry_log.rfid = :rfid"
+        sql_params[ 'rfid' ] = tag
+
     conn = get_engine().connect()
     stmt = text( """
         SELECT
@@ -96,7 +100,8 @@ def search_scan_logs( tag, offset, limit):
         FROM entry_log
         LEFT OUTER JOIN members ON entry_log.rfid = members.rfid
         LEFT OUTER JOIN locations ON entry_log.location = locations.id
-        WHERE entry_log.rfid = :rfid
+    """ + where_clause +
+    """
         ORDER BY entry_log.entry_time DESC
         LIMIT :limit
         OFFSET :offset

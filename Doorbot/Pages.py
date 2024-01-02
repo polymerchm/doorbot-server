@@ -170,6 +170,9 @@ def search_scan_logs():
     offset = args.get( 'offset' )
     limit = args.get( 'limit' )
 
+    # Normalize the data
+    rfid = "" if rfid is None else rfid
+
     offset = int( offset ) if offset else 0
     limit = int( limit ) if limit else 0
 
@@ -183,12 +186,17 @@ def search_scan_logs():
 
     logs = Doorbot.API.search_scan_logs( rfid, offset, limit )
 
+    next_offset = offset + limit
+
     username = flask.session.get( 'username' )
     return render_template(
         'search_scan_logs',
         page_name = "Search Scan Logs",
         tags = logs,
         username = username,
+        rfid = rfid,
+        next_offset = next_offset,
+        limit = limit,
     )
 
 @app.route( "/view-tag-list", methods = [ "GET" ] )
