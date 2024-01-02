@@ -200,6 +200,10 @@ def view_tag_list():
     offset = args.get( 'offset' )
     limit = args.get( 'limit' )
 
+    # Normalize the data
+    name = "" if name is None else name
+    rfid = "" if rfid is None else rfid
+
     offset = int( offset ) if offset else 0
     limit = int( limit ) if limit else 0
 
@@ -212,6 +216,8 @@ def view_tag_list():
         limit = 100
     elif limit > 100:
         limit = 100
+
+    next_offset = offset + limit
 
     members = Doorbot.API.search_tag_list( name, rfid, offset, limit )
     formatted_members = list( map(
@@ -230,6 +236,10 @@ def view_tag_list():
         page_name = "Search Tag List",
         tags = formatted_members,
         username = username,
+        next_offset = next_offset,
+        limit = limit,
+        search_name = name,
+        rfid = rfid,
     )
 
 @app.route( "/edit-tag", methods = [ "GET" ] )

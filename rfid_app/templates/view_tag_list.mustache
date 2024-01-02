@@ -48,7 +48,15 @@
     </tr>
     </tbody>
     {{/tags}}
-
 </table>
+
+<form method="GET" action="/view-tag-list">
+    <input type="hidden" name="search_name" value="{{search_name}}">
+    <input type="hidden" name="search_rfid" value="{{search_rfid}}">
+    <input type="hidden" name="limit" value="{{limit}}">
+    <input type="hidden" name="offset" value="{{next_offset}}">
+
+    <p><input type="submit" value="Next"></p>
+</form>
 
 {{> foot }}
