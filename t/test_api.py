@@ -31,6 +31,7 @@ class TestAPI( flask_unittest.ClientTestCase ):
         member = Doorbot.SQLAlchemy.Member(
             full_name = "_tester",
             rfid = USER_PASS[0],
+            username = USER_PASS[0],
         )
         member.set_password( USER_PASS[1], {
             "type": "plaintext",
@@ -60,6 +61,9 @@ class TestAPI( flask_unittest.ClientTestCase ):
         session.add_all( members )
         session.commit()
 
+        rv = client.get( '/check_tag/1234' )
+        self.assertStatus( rv, 401 )
+
         rv = client.get( '/check_tag/1234', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
@@ -88,16 +92,19 @@ class TestAPI( flask_unittest.ClientTestCase ):
         session.add_all( members )
         session.commit()
 
-        rv = client.get( '/secure/entry/5678/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/entry/5678/cleanroom.door' )
+        self.assertStatus( rv, 401 )
+
+        rv = client.get( '/entry/5678/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 200 )
 
-        rv = client.get( '/secure/entry/8765/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/entry/8765/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 403 )
 
-        rv = client.get( '/secure//entry/1111/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/entry/1111/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 404 )
 
-        rv = client.get( '/secure/entry/foobar/cleanroom.door', auth = USER_PASS )
+        rv = client.get( '/entry/foobar/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 400 )
 
     def test_add_tag( self, client ):
@@ -255,7 +262,11 @@ class TestAPI( flask_unittest.ClientTestCase ):
         session.commit()
 
 
+        rv = client.get( '/secure/dump_active_tags' )
+        self.assertStatus( rv, 401 )
+
         rv = client.get( '/secure/dump_active_tags', auth = USER_PASS )
+        self.assertStatus( rv, 200 )
         data = rv.data.decode( "UTF-8" )
         data = json.loads( data )
 

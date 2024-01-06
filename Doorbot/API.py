@@ -10,6 +10,7 @@ from Doorbot.SQLAlchemy import Role
 from Doorbot.SQLAlchemy import get_engine
 from Doorbot.SQLAlchemy import get_session
 from datetime import datetime
+from flask_httpauth import HTTPBasicAuth
 from sqlalchemy import select
 from sqlalchemy.sql import text
 
@@ -34,6 +35,7 @@ app = flask.Flask( "rfid_app",
     static_url_path = '',
     static_folder = 'rfid_app/static/',
 )
+auth = HTTPBasicAuth()
 
 def set_error(
     response,
@@ -153,6 +155,16 @@ def auth_required( func ):
 
     return check
 
+@auth.verify_password
+def verify_basic_auth( username, password ):
+    session = get_session()
+    member = Member.get_by_username( username, session )
+
+    if member and member.check_password( password, session ):
+        return member
+
+    return None
+
 
 @app.route( "/" )
 def redirect_home():
@@ -162,6 +174,7 @@ def redirect_home():
         return flask.redirect( '/home', code = 302 )
 
 @app.route( "/check_tag/<tag>",  methods = [ "GET" ] )
+@auth.login_required
 def check_tag( tag ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):
@@ -203,8 +216,10 @@ def check_tag_by_permission( tag, permission ):
 
     return response
 
-# TODO change this to /v1/entry/<tag>/<location>
-@app.route( "/secure/entry/<tag>/<location>", methods = [ "GET" ] )
+# TODO deprecate non-/v1 version
+@app.route( "/entry/<tag>/<location>", methods = [ "GET" ] )
+@app.route( "/v1/entry/<tag>/<location>", methods = [ "GET" ] )
+@auth.login_required
 def log_entry( tag, location ):
     response = flask.make_response()
     if (not MATCH_INT.match( tag )) or (not MATCH_NAME.match( location )):
@@ -443,6 +458,7 @@ def dump_tags_for_permission( permission ):
     return response
 
 @app.route( "/secure/dump_active_tags", methods = [ "GET" ] )
+@auth.login_required
 def dump_tags():
     session = get_session()
     stmt = select( Member ).where(

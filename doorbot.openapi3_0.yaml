@@ -74,7 +74,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/entry/{rfid}/{location}:
+  /entry/{rfid}/{location}:
     get:
       tags:
         - rfid
