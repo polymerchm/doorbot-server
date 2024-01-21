@@ -21,6 +21,11 @@ parser.add_argument(
     help = 'Members with a different name between the MMS and DB',
 )
 parser.add_argument(
+    '--wrong-rfid-name',
+    action = 'store_true',
+    help = 'Members with a different name between the MMS and DB',
+)
+parser.add_argument(
     '--wrong-active',
     action = 'store_true',
     help = 'Members with a different active status between the MMS and DB',
@@ -52,6 +57,8 @@ if args[ 'zerod' ]:
     want = got[ 'zerod_members' ]
 if args[ 'wrong_name' ]:
     want = got[ 'wrong_name_members' ]
+if args[ 'wrong_rfid_name' ]:
+    want = got[ 'wrong_rfid_name_members' ]
 if args[ 'wrong_active' ]:
     want = got[ 'wrong_active_members' ]
 if args[ 'add_to_db' ]:

@@ -12,6 +12,7 @@ from datetime import datetime
 from flask_stache import render_template
 from sqlalchemy import select
 from sqlalchemy.sql import text
+import pathlib
 
 
 def error_page(
@@ -434,3 +435,25 @@ def activate_tag_submit():
         username = username,
         msg = action,
     )
+
+@app.route( "/mp-rfid-report", methods = [ "GET" ] )
+@require_logged_in
+def view_mp_rfid_report():
+    username = flask.session.get( 'username' )
+
+    cur_dir = pathlib \
+        .Path( __file__ ) \
+        .parent \
+        .resolve()
+    full_pathname = pathlib \
+        .PurePath( cur_dir, '../cache_files/mp_rfid_report.txt')
+    f = open(full_pathname, 'r')
+    mp_rfid_rpt = f.read()
+
+    return render_template(
+        'mp_rfid',
+        page_name = "MemberPress vs. RFID Report",
+        username = username,
+        page_text = mp_rfid_rpt
+    )
+
