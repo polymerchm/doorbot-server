@@ -38,6 +38,10 @@ node {
                     string(
                         credentialsId: 'rfid-dev-db-password'
                         ,variable: 'RFID_DB_PASSWORD'
+                    ),
+                    string(
+                        credentialsId: 'mms-password'
+                        ,variable: 'MMS_PASSWORD'
                     )
                 ]) {
                     def example_conf = 'config.yml.example'
@@ -48,6 +52,8 @@ node {
                     conf.postgresql.database = 'doorbot'
                     conf.postgresql.host = 'host.docker.internal'
                     conf.postgresql.port = 5432
+                    conf.memberpress.user = 'tmurray@wumpus-cave.net'
+                    conf.memberpress.passwd = MMS_PASSWORD
                     conf.session.key = session_key
                     conf.build_id = env.BUILD_ID
                     conf.build_branch = env.BRANCH_NAME
