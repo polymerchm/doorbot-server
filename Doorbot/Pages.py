@@ -12,6 +12,7 @@ from datetime import datetime
 from flask_stache import render_template
 from sqlalchemy import select
 from sqlalchemy.sql import text
+from urllib.parse import urlparse
 import pathlib
 
 
@@ -48,12 +49,40 @@ def require_logged_in( func ):
 
     return check
 
+def get_env():
+    request = flask.request
+    host_url = urlparse( request.base_url )
+    hostname = host_url.hostname
+
+    env = "personal"
+    if "rfid-dev" in hostname:
+        env = "dev"
+    elif "rfid-stage" in hostname:
+        env = "stage"
+    elif "rfid-prod" in hostname:
+        env = "prod"
+
+    return env
+
+
+def render_tmpl( name, **context ):
+    context[ 'env' ] = env = get_env()
+    context[ 'is_lower_env' ] = True if env != "prod" else False
+
+    print( f'Env: {context["env"]}' )
+    print( f'Is lower: {context["is_lower_env"]}' )
+
+    return render_template(
+        name,
+        **context,
+    )
+
 @app.route( "/home", methods = [ "GET" ] )
 @require_logged_in
 def home_page():
     username = flask.session.get( 'username' )
 
-    return render_template(
+    return render_tmpl(
         'home',
         page_name = "Home",
         username = username,
@@ -63,7 +92,7 @@ def home_page():
 def login_form( errors = [] ):
     has_error = True if errors else False
 
-    return render_template(
+    return render_tmpl(
         'login',
         page_name = "Login",
         has_errors = has_error,
@@ -110,7 +139,7 @@ def logout():
 def add_tag_form():
     username = flask.session.get( 'username' )
 
-    return render_template(
+    return render_tmpl(
         'add_tag',
         page_name = "Add RFID Tag",
         username = username,
@@ -156,7 +185,7 @@ def add_tag():
         session.add( member )
         session.commit()
 
-        return render_template(
+        return render_tmpl(
             'add_tag',
             page_name = "Add RFID Tag",
             username = username,
@@ -191,7 +220,7 @@ def search_scan_logs():
     next_offset = offset + limit
 
     username = flask.session.get( 'username' )
-    return render_template(
+    return render_tmpl(
         'search_scan_logs',
         page_name = "Search Scan Logs",
         tags = logs,
@@ -241,7 +270,7 @@ def view_tag_list():
     ))
 
     username = flask.session.get( 'username' )
-    return render_template(
+    return render_tmpl(
         'view_tag_list',
         page_name = "Search Tag List",
         tags = formatted_members,
@@ -260,7 +289,7 @@ def edit_tag_form():
     current_tag = flask.request.args.get( 'current_tag' )
     current_tag = current_tag if current_tag else ''
 
-    return render_template(
+    return render_tmpl(
         'edit_tag',
         page_name = "Edit Tag",
         username = username,
@@ -309,7 +338,7 @@ def edit_tag_submit():
     session.add( member )
     session.commit()
 
-    return render_template(
+    return render_tmpl(
         'edit_tag',
         page_name = "Edit Tag",
         username = username,
@@ -325,7 +354,7 @@ def edit_name_form():
     current_tag = flask.request.args.get( 'current_tag' )
     current_name = flask.request.args.get( 'current_name' )
 
-    return render_template(
+    return render_tmpl(
         'edit_name',
         page_name = "Edit Name",
         username = username,
@@ -375,7 +404,7 @@ def edit_name_submit():
     session.add( member )
     session.commit()
 
-    return render_template(
+    return render_tmpl(
         'edit_name',
         page_name = "Edit Name",
         username = username,
@@ -429,7 +458,7 @@ def activate_tag_submit():
     action = "Activated tag" if activate else "Deactivated tag"
     action = action + " " + tag + " for " + member.full_name
 
-    return render_template(
+    return render_tmpl(
         'activate_tag',
         page_name = page_name,
         username = username,
@@ -450,7 +479,7 @@ def view_mp_rfid_report():
     f = open(full_pathname, 'r')
     mp_rfid_rpt = f.read()
 
-    return render_template(
+    return render_tmpl(
         'mp_rfid',
         page_name = "MemberPress vs. RFID Report",
         username = username,

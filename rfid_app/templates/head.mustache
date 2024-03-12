@@ -5,3 +5,9 @@
     <link rel="stylesheet" href="/main.css">
 </head>
 <body>
+
+{{#is_lower_env}}
+<div class="lower_env_banner env_{{env}}">
+You are running on the {{env}} site
+</div>
+{{/is_lower_env}}

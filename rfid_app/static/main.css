@@ -1,3 +1,26 @@
 #error_list {
     color: red;
 }
+
+.lower_env_banner {
+    width: 100%;
+    padding: 5px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.env_personal {
+    background-color: red;
+}
+
+.env_dev {
+    background-color: red;
+}
+
+.env_stage {
+    background-color: yellow;
+}
+
+.env_prod {
+    display: hidden;
+}
