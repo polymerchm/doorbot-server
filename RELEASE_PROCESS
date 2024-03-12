@@ -2,4 +2,4 @@
 * Tag the current docker image as doorbot:prod-latest
 ** rfid-dev:/home/tmurray/bin/tag_doorbot_prod.sh 
 * Pull and restart the docker container on prod
-** rfid-prod:/usr/local/bin/start_docker.sh
+** rfid-prod:/usr/local/bin/start_docker.sh doorbot:prod-latest prod-latest
