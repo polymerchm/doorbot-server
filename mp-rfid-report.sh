@@ -18,7 +18,7 @@ python3 $bcfil > $cdir/$jfile
 # Headings
 cat $cdir/$jfile | python3 $pyfil --wrong-active | jq -r '.[0] | to_entries | map(.key) | join(",")' > $cdir/tmp1
 # Body
-cat $cdir/$jfile | python3 $pyfil --wrong-active | jq -r '.[]| join(",")' > $cdir/tmp2
+cat $cdir/$jfile | python3 $pyfil --wrong-active | jq -r '.[] | map(. | tostring) | join(",")' > $cdir/tmp2
 # Sort body by active_mms (col 3) first, by name (col 2) second
 cat $cdir/tmp2 | sort -t , -k3,3 -k6,6 > $cdir/tmp3
 # Nicer output
@@ -30,7 +30,7 @@ cat $cdir/tmp1 $cdir/tmp3 | column -s , -t >> $cdir/$ofile
 # Headings
 cat $cdir/$jfile | python3 $pyfil --wrong-rfid-name | jq -r '.[0] | to_entries | map(.key) | join(",")' > $cdir/tmp1
 # Body
-cat $cdir/$jfile | python3 $pyfil --wrong-rfid-name | jq -r '.[]| join(",")' > $cdir/tmp2
+cat $cdir/$jfile | python3 $pyfil --wrong-rfid-name | jq -r '.[] | map(. | tostring) | join(",")' > $cdir/tmp2
 # Sort body by name (col 2)
 cat $cdir/tmp2 | sort -t , -k2,2 > $cdir/tmp3
 # Nicer output
@@ -42,7 +42,7 @@ cat $cdir/tmp1 $cdir/tmp3 | column -s , -t >> $cdir/$ofile
 # Headings
 cat $cdir/$jfile | python3 $pyfil --wrong-name | jq -r '.[0] | to_entries | map(.key) | join(",")' > $cdir/tmp1
 # Body
-cat $cdir/$jfile | python3 $pyfil --wrong-name | jq -r '.[]| join(",")' > $cdir/tmp2
+cat $cdir/$jfile | python3 $pyfil --wrong-name | jq -r '.[] | map(. | tostring) | join(",")' > $cdir/tmp2
 # Sort body by name (col 2)
 cat $cdir/tmp2 | sort -t , -k2,2 > $cdir/tmp3
 # Nicer output
