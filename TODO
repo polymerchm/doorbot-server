@@ -1,3 +1,11 @@
+* Have check tag APIs return an output with a few fields like:
+
+    {
+        "rfid": 12345,
+        "name": "John Smith",
+        "location": "woodshop.door"
+    }
+
 # Future Version
 * Rebuild flask directory layout
 * HTML Tests
