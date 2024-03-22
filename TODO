@@ -1,5 +1,3 @@
-* Send 404 when invalid location name is sent
-
 # Future Version
 * Rebuild flask directory layout
 * HTML Tests
