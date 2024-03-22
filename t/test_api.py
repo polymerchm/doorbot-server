@@ -97,6 +97,8 @@ class TestAPI( flask_unittest.ClientTestCase ):
 
         rv = client.get( '/entry/5678/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 200 )
+        data = rv.data.decode( "UTF-8" )
+        self.assertRegex( data, r'"full_name":\s*"Bar Baz"' )
 
         rv = client.get( '/entry/8765/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 403 )

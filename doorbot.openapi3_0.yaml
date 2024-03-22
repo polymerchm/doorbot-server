@@ -56,6 +56,10 @@ paths:
       responses:
         '200':
           description: Tag is found and valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryResponse'
         '400':
           description: Invalid input
           content:
@@ -85,6 +89,10 @@ paths:
       responses:
         '200':
           description: Tag is found and valid for this location
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntryResponse'
         '400':
           description: Invalid input
           content:
@@ -455,6 +463,22 @@ paths:
 
 components:
   schemas:
+    EntryResponse:
+      type: object
+      required:
+        - full_name
+        - rfid
+        - location
+      properties:
+        full_name:
+          type: string
+          example: 'Jane Doe'
+        rfid:
+          type: string
+          example: '0001234567'
+        location:
+          type: string
+          example: 'woodshop.door'
     SearchMembersResults:
       type: object
       required:

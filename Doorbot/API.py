@@ -209,6 +209,13 @@ def check_tag_by_permission( tag, permission ):
     elif member.active:
         if member.has_permission( permission ):
             response.status = 200
+            response.content_type = 'application/json'
+            json_data = flask.json.dumps({
+                "rfid": tag,
+                "location": permission,
+                "full_name": member.full_name,
+            })
+            response.set_data( json_data )
         else:
             response.status = 403
     else:
@@ -255,6 +262,13 @@ def log_entry( tag, location ):
         entry.is_active_tag = True
         entry.is_found_tag = True
         response.status = 200
+        response.content_type = 'application/json'
+        json_data = flask.json.dumps({
+            "rfid": tag,
+            "location": location,
+            "full_name": member.full_name,
+        })
+        response.set_data( json_data )
     else:
         entry.is_active_tag = False
         entry.is_found_tag = True
