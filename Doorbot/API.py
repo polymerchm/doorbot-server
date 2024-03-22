@@ -232,7 +232,15 @@ def log_entry( tag, location ):
     stmt = select( Location ).where(
         Location.name == location
     )
-    location_db = session.scalars( stmt ).one()
+    location_db = session.scalars( stmt ).one_or_none()
+
+    if location_db is None:
+        set_error(
+            response = response,
+            msg = "Location " + location + " was not found",
+            status = 404,
+        )
+        return response
 
     entry = EntryLog(
         rfid = tag,
