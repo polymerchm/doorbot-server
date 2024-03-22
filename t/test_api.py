@@ -107,6 +107,9 @@ class TestAPI( flask_unittest.ClientTestCase ):
         rv = client.get( '/entry/foobar/cleanroom.door', auth = USER_PASS )
         self.assertStatus( rv, 400 )
 
+        rv = client.get( '/entry/5678/no_such.entry', auth = USER_PASS )
+        self.assertStatus( rv, 404 )
+
     def test_add_tag( self, client ):
         rv = client.get( '/check_tag/9012', auth = USER_PASS )
         self.assertStatus( rv, 404 )
