@@ -1,3 +1,4 @@
+* Send 404 when invalid location name is sent
 * Have check tag APIs return an output with a few fields like:
 
     {
