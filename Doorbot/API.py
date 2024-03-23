@@ -204,22 +204,34 @@ def check_tag_by_permission( tag, permission ):
     session = get_session()
     member = Member.get_by_tag( tag, session )
 
+    is_active = False
+    is_found = False
+    full_name = None
     if None == member:
         response.status = 404
     elif member.active:
+        is_active = True
+        is_found = True
+        full_name = member.full_name
         if member.has_permission( permission ):
             response.status = 200
-            response.content_type = 'application/json'
-            json_data = flask.json.dumps({
-                "rfid": tag,
-                "location": permission,
-                "full_name": member.full_name,
-            })
-            response.set_data( json_data )
         else:
             response.status = 403
     else:
+        is_active = False
+        is_found = True
+        full_name = member.full_name
         response.status = 403
+
+    response.content_type = 'application/json'
+    json_data = flask.json.dumps({
+        "rfid": tag,
+        "location": permission,
+        "full_name": full_name,
+        "active": is_active,
+        "found": is_found,
+    })
+    response.set_data( json_data )
 
     return response
 
@@ -254,22 +266,18 @@ def log_entry( tag, location ):
         mapped_location = location_db,
     )
 
+    full_name = None
     if None == member:
         entry.is_active_tag = False
         entry.is_found_tag = False
         response.status = 404
     elif member.active:
+        full_name = member.full_name
         entry.is_active_tag = True
         entry.is_found_tag = True
         response.status = 200
-        response.content_type = 'application/json'
-        json_data = flask.json.dumps({
-            "rfid": tag,
-            "location": location,
-            "full_name": member.full_name,
-        })
-        response.set_data( json_data )
     else:
+        full_name = member.full_name
         entry.is_active_tag = False
         entry.is_found_tag = True
         response.status = 403
@@ -277,6 +285,16 @@ def log_entry( tag, location ):
     session.add( entry )
     session.add( location_db )
     session.commit()
+
+    response.content_type = 'application/json'
+    json_data = flask.json.dumps({
+        "rfid": tag,
+        "location": location,
+        "full_name": full_name,
+        "active": entry.is_active_tag,
+        "found": entry.is_found_tag,
+    })
+    response.set_data( json_data )
 
     return response
 
