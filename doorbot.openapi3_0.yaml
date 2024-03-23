@@ -71,13 +71,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/EntryResponse'
         '403':
           description: Tag was found, but not valid
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/EntryResponse'
   /entry/{rfid}/{location}:
     get:
       tags:
@@ -104,13 +104,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/EntryResponse'
         '403':
           description: Tag was found, but not active for this location
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/EntryResponse'
   /v1/new_tag/{rfid}/{full_name}:
     put:
       tags:
@@ -479,6 +479,10 @@ components:
         location:
           type: string
           example: 'woodshop.door'
+        active:
+          type: boolean
+        found:
+          type: boolean
     SearchMembersResults:
       type: object
       required:
