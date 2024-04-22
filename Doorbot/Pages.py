@@ -464,11 +464,11 @@ def activate_tag_submit():
     member.active = True if activate else False
     session.add( member )
     session.commit()
-    session.close()
 
     action = "Activated tag" if activate else "Deactivated tag"
     action = action + " " + tag + " for " + member.full_name
 
+    session.close()
     return render_tmpl(
         'activate_tag',
         page_name = page_name,
