@@ -491,6 +491,7 @@ def dump_tags_for_permission( permission ):
 
     response = flask.make_response()
     if found_permission is None:
+        session.close()
         set_error(
             response = response,
             msg = "Permission " + permission + " was not found",
@@ -502,6 +503,7 @@ def dump_tags_for_permission( permission ):
             rfid = member.rfid
             members[ rfid ] = True
 
+        session.close()
         json_data = flask.json.dumps( members )
         response.content_type = 'application/json'
         response.set_data( json_data )
@@ -516,6 +518,7 @@ def dump_tags():
         Member.active == True
     )
     members = session.scalars( stmt ).all()
+    session.close()
 
     out = {}
     for member in members:
@@ -534,6 +537,7 @@ def change_password( tag ):
     response = flask.make_response()
 
     if member is None:
+        session.close()
         set_error(
             response = response,
             msg = "Member with RFID " + rfid + " was not found",
@@ -544,6 +548,7 @@ def change_password( tag ):
         pass2 = flask.request.form[ 'new_pass2' ]
 
         if pass1 != pass2:
+            session.close()
             set_error(
                 response = response,
                 msg = "Passwords do not match",
@@ -554,6 +559,7 @@ def change_password( tag ):
             member.set_password( pass1, password_config )
             session.add( member )
             session.commit()
+            session.close()
 
             response.status = 200
 
@@ -569,6 +575,7 @@ def add_permission( permission, role ):
     role_obj.permissions.append( permission_obj )
     session.add_all([ role_obj, permission_obj ])
     session.commit()
+    session.close()
 
     response = flask.make_response()
     response.status = 201
@@ -583,12 +590,14 @@ def delete_permission( permission, role ):
 
     response = flask.make_response()
     if not role_obj:
+        session.close()
         set_error(
             response = response,
             msg = "Role " + role + " was not found",
             status = 404,
         )
     elif not permission_obj:
+        session.close()
         set_error(
             response = response,
             msg = "Permission " + permission + " was not found",
@@ -600,6 +609,7 @@ def delete_permission( permission, role ):
         role_obj.permissions.remove( permission_obj )
         session.add_all([ role_obj, permission_obj ])
         session.commit()
+        session.close()
 
     return response
 
@@ -620,6 +630,7 @@ def add_role_to_member( role, tag ):
 
         response.status = 201
 
+    session.close()
     return response
 
 @app.route( "/v1/role/<role>/<tag>", methods = [ "DELETE" ] )
@@ -631,12 +642,14 @@ def delete_role_from_member( role, tag ):
 
     response = flask.make_response()
     if not member_obj:
+        session.commit()
         set_error(
             response = response,
             msg = "Member for RFID " + tag + " was not found",
             status = 404,
         )
     elif not role_obj:
+        session.commit()
         set_error(
             response = response,
             msg = "Role " + role + " was not found",
@@ -647,6 +660,7 @@ def delete_role_from_member( role, tag ):
 
         member_obj.roles.remove( role_obj )
         session.add_all([ member_obj, role_obj ])
+        session.commit()
         session.commit()
 
     return response
