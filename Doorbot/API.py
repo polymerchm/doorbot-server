@@ -319,6 +319,7 @@ def new_tag( tag, full_name ):
     )
     session.add( member )
     session.commit()
+    session.close()
 
     response.status = 201
     return response
@@ -337,6 +338,7 @@ def deactivate_tag( tag ):
     member.active = False
     session.add( member )
     session.commit()
+    session.close()
 
     response.status = 200
     return response
@@ -355,6 +357,7 @@ def reactivate_tag( tag ):
     member.active = True
     session.add( member )
     session.commit()
+    session.close()
 
     response.status = 200
     return response
@@ -376,6 +379,7 @@ def edit_tag( current_tag, new_tag ):
     member.rfid = new_tag
     session.add( member )
     session.commit()
+    session.close()
 
     response.status = 201
     return response
@@ -394,6 +398,7 @@ def edit_name( tag, new_name ):
     member.full_name = new_name
     session.add( member )
     session.commit()
+    session.close()
 
     response.status = 201
     return response
