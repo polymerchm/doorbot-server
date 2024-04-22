@@ -138,6 +138,7 @@ def search_tag_list(
 
     session = get_session()
     members = session.scalars( stmt ).all()
+    session.close()
 
     return members
 
@@ -159,6 +160,7 @@ def auth_required( func ):
 def verify_basic_auth( username, password ):
     session = get_session()
     member = Member.get_by_username( username, session )
+    session.close()
 
     if member and member.check_password( password, session ):
         return member
@@ -183,6 +185,7 @@ def check_tag( tag ):
 
     session = get_session()
     member = Member.get_by_tag( tag, session )
+    session.close()
 
     if None == member:
         response.status = 404
@@ -203,6 +206,7 @@ def check_tag_by_permission( tag, permission ):
 
     session = get_session()
     member = Member.get_by_tag( tag, session )
+    session.close()
 
     is_active = False
     is_found = False
@@ -254,6 +258,7 @@ def log_entry( tag, location ):
     location_db = session.scalars( stmt ).one_or_none()
 
     if location_db is None:
+        session.close()
         set_error(
             response = response,
             msg = "Location " + location + " was not found",
@@ -296,6 +301,7 @@ def log_entry( tag, location ):
     })
     response.set_data( json_data )
 
+    session.close()
     return response
 
 @app.route( "/v1/new_tag/<tag>/<full_name>", methods = [ "PUT" ] )
