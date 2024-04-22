@@ -110,6 +110,7 @@ def login():
 
     response = flask.make_response()
     if not member:
+        session.close()
         return error_page(
             response,
             msgs = [ "Incorrect Login" ],
@@ -118,6 +119,7 @@ def login():
             status = 404,
         )
     elif not member.check_password( password, session ):
+        session.close()
         return error_page(
             response,
             msgs = [ "Incorrect Login" ],
@@ -126,6 +128,7 @@ def login():
             status = 404,
         )
     else:
+        session.close()
         flask.session[ 'username' ] = username
         return home_page()
 
@@ -169,6 +172,7 @@ def add_tag():
 
     response = flask.make_response()
     if errors:
+        session.close()
         return error_page(
             response,
             msgs = errors,
@@ -184,6 +188,7 @@ def add_tag():
         )
         session.add( member )
         session.commit()
+        session.close()
 
         return render_tmpl(
             'add_tag',
@@ -325,6 +330,7 @@ def edit_tag_submit():
     member = Member.get_by_tag( current_tag, session )
 
     if not member:
+        session.close()
         return error_page(
             response,
             tmpl = 'edit_tag',
@@ -337,6 +343,7 @@ def edit_tag_submit():
     member.rfid = new_tag
     session.add( member )
     session.commit()
+    session.close()
 
     return render_tmpl(
         'edit_tag',
@@ -391,6 +398,7 @@ def edit_name_submit():
     member = Member.get_by_tag( current_tag, session )
 
     if not member:
+        session.close()
         return error_page(
             response,
             tmpl = 'edit_name',
@@ -403,6 +411,7 @@ def edit_name_submit():
     member.full_name = new_name
     session.add( member )
     session.commit()
+    session.close()
 
     return render_tmpl(
         'edit_name',
@@ -442,6 +451,7 @@ def activate_tag_submit():
     member = Member.get_by_tag( tag, session )
 
     if not member:
+        session.close()
         return error_page(
             response,
             tmpl = 'activate_tag',
@@ -454,6 +464,7 @@ def activate_tag_submit():
     member.active = True if activate else False
     session.add( member )
     session.commit()
+    session.close()
 
     action = "Activated tag" if activate else "Deactivated tag"
     action = action + " " + tag + " for " + member.full_name

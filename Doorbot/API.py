@@ -642,14 +642,14 @@ def delete_role_from_member( role, tag ):
 
     response = flask.make_response()
     if not member_obj:
-        session.commit()
+        session.close()
         set_error(
             response = response,
             msg = "Member for RFID " + tag + " was not found",
             status = 404,
         )
     elif not role_obj:
-        session.commit()
+        session.close()
         set_error(
             response = response,
             msg = "Role " + role + " was not found",
@@ -661,7 +661,7 @@ def delete_role_from_member( role, tag ):
         member_obj.roles.remove( role_obj )
         session.add_all([ member_obj, role_obj ])
         session.commit()
-        session.commit()
+        session.close()
 
     return response
 

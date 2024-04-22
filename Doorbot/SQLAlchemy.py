@@ -199,6 +199,7 @@ class Member( Base ):
             ).filter(
                 Permission.name == permission
             ).first()
+        session.close()
 
         return result is not None
 
@@ -217,6 +218,7 @@ class Member( Base ):
             ).filter(
                 role_permission_association.c.permission_id == Permission.id
             ).all()
+        session.close()
 
         return result
 
@@ -231,6 +233,7 @@ class Member( Base ):
             ).filter(
                 member_role_association.c.role_id == Role.id
             ).all()
+        session.close()
 
         return result
 
@@ -516,6 +519,7 @@ class Role( Base ):
             )
         result = query.first()
 
+        session.close()
         return result is not None
 
     def all_permissions( self ):
@@ -529,6 +533,7 @@ class Role( Base ):
                 role_permission_association.c.permission_id == Permission.id
             ).all()
 
+        session.close()
         return result
 
 class Permission( Base ):
@@ -568,4 +573,5 @@ class Permission( Base ):
             query = query.filter( Member.active == True )
 
         result = query.all()
+        session.close()
         return result
