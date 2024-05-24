@@ -24,3 +24,17 @@
 .env_prod {
     display: hidden;
 }
+
+.activate_button {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+}
+
+.activate_form {
+    margin-bottom: 0px;
+}
+
+.activate_cell {
+    border: 0px;
+}
