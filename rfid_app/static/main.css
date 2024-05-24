@@ -1,3 +1,41 @@
+:root {
+    /* Color scheme:
+     * https://paletton.com/#uid=13C0u0kepl76tuIa-pnhmgimLdJ
+     */
+    --color-primary: #2B3E55;
+    --color-secondary: #8390a0;
+    --color-tertiary: #5c6e84;
+}
+
+
+body {
+    background-color: var(--color-primary);
+    color: var(--color-secondary);
+}
+
+
+a {
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:link {
+    color: var(--color-secondary);
+}
+
+a:visited {
+    color: var(--color-secondary);
+}
+
+a:hover {
+    color: var(--color-tertiary);
+}
+
+a:active {
+    color: var(--color-tertiary);
+}
+
+
 #error_list {
     color: red;
 }
