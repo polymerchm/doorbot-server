@@ -197,7 +197,7 @@ def check_tag( tag ):
     return response
 
 @app.route( "/v1/check_tag/<tag>/<permission>",  methods = [ "GET" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def check_tag_by_permission( tag, permission ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):
@@ -305,7 +305,7 @@ def log_entry( tag, location ):
     return response
 
 @app.route( "/v1/new_tag/<tag>/<full_name>", methods = [ "PUT" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def new_tag( tag, full_name ):
     response = flask.make_response()
     if (not MATCH_INT.match( tag )) or (not MATCH_NAME.match( full_name )):
@@ -325,7 +325,7 @@ def new_tag( tag, full_name ):
     return response
 
 @app.route( "/v1/deactivate_tag/<tag>", methods = [ "POST" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def deactivate_tag( tag ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):
@@ -344,7 +344,7 @@ def deactivate_tag( tag ):
     return response
 
 @app.route( "/v1/reactivate_tag/<tag>", methods = [ "POST" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def reactivate_tag( tag ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):
@@ -363,7 +363,7 @@ def reactivate_tag( tag ):
     return response
 
 @app.route( "/v1/edit_tag/<current_tag>/<new_tag>", methods = [ "POST" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def edit_tag( current_tag, new_tag ):
     response = flask.make_response()
     if not MATCH_INT.match( current_tag ):
@@ -385,7 +385,7 @@ def edit_tag( current_tag, new_tag ):
     return response
 
 @app.route( "/v1/edit_name/<tag>/<new_name>", methods = [ "POST" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def edit_name( tag, new_name ):
     response = flask.make_response()
     if not MATCH_INT.match( tag ):
@@ -404,7 +404,7 @@ def edit_name( tag, new_name ):
     return response
 
 @app.route( "/v1/search_tags", methods = [ "GET" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def search_tags():
     args = flask.request.args
     response = flask.make_response()
@@ -442,7 +442,7 @@ def search_tags():
     return response
 
 @app.route( "/v1/search_entry_log", methods = [ "GET" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def search_entry_log():
     args = flask.request.args
     response = flask.make_response()
@@ -481,7 +481,7 @@ def search_entry_log():
     return response
 
 @app.route( "/v1/dump_active_tags/<permission>", methods = [ "GET" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def dump_tags_for_permission( permission ):
     session = get_session()
     stmt = select( Doorbot.SQLAlchemy.Permission ).where(
@@ -494,7 +494,7 @@ def dump_tags_for_permission( permission ):
         session.close()
         set_error(
             response = response,
-            msg = "Permission " + permission + " was not found",
+            msg = "Location " + permission + " was not found",
             status = 404,
         )
     else:
@@ -529,7 +529,7 @@ def dump_tags():
 
 
 @app.route( "/v1/change_passwd/<tag>", methods = [ "PUT" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def change_password( tag ):
     session = get_session()
     member = Member.get_by_tag( tag, session )
@@ -566,7 +566,7 @@ def change_password( tag ):
     return response
 
 @app.route( "/v1/permission/<permission>/<role>", methods = [ "PUT" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def add_permission( permission, role ):
     session = get_session()
     role_obj = get_or_create( session, Role, name = role )
@@ -582,7 +582,7 @@ def add_permission( permission, role ):
     return response
 
 @app.route( "/v1/permission/<permission>/<role>", methods = [ "DELETE" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def delete_permission( permission, role ):
     session = get_session()
     role_obj = get( session, Role, name = role )
@@ -600,7 +600,7 @@ def delete_permission( permission, role ):
         session.close()
         set_error(
             response = response,
-            msg = "Permission " + permission + " was not found",
+            msg = "Location " + permission + " was not found",
             status = 404,
         )
     else:
@@ -614,7 +614,7 @@ def delete_permission( permission, role ):
     return response
 
 @app.route( "/v1/role/<role>/<tag>", methods = [ "PUT" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def add_role_to_member( role, tag ):
     session = get_session()
     member = Member.get_by_tag( tag, session )
@@ -634,7 +634,7 @@ def add_role_to_member( role, tag ):
     return response
 
 @app.route( "/v1/role/<role>/<tag>", methods = [ "DELETE" ] )
-@auth_required
+@auth.login_required  # was @auth_required
 def delete_role_from_member( role, tag ):
     session = get_session()
     role_obj = get( session, Role, name = role )
