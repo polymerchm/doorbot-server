@@ -8,12 +8,13 @@ from Doorbot.SQLAlchemy import Permission
 from Doorbot.SQLAlchemy import Role
 from Doorbot.SQLAlchemy import get_engine
 from Doorbot.SQLAlchemy import get_session
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from flask_stache import render_template
 from sqlalchemy import select
 from sqlalchemy.sql import text
 from urllib.parse import urlparse
 import pathlib
+import secrets
 
 
 def error_page(
@@ -802,4 +803,67 @@ def mp_rfid_report():
         username = username,
         page_text = mp_rfid_rpt
     )
+
+@app.route( "/create-oauth", methods = [ "GET" ] )
+@require_logged_in
+def create_oauth_form():
+    username = flask.session.get( 'username' )
+
+    return render_tmpl(
+        'create_oauth',
+        page_name = "Create OAuth2 Token"
+    )
+
+@app.route( "/create-oauth", methods = [ "POST" ] )
+@require_logged_in
+def create_oauth():
+    username = flask.session.get( 'username' )
+
+    request = flask.request
+    name = request.form[ 'name' ]
+
+    session = get_session()
+
+    errors = []
+    if not Doorbot.API.MATCH_NAME.match( name ):
+        errors.append( "Token Name should be a string" )
+
+    response = flask.make_response()
+    if errors:
+        session.close()
+        return error_page(
+            response,
+            msgs = errors,
+            tmpl = "create_oauth",
+            page_name = "Create OAuth Token",
+            status = 400,
+        )
+    else:
+        token_config = Doorbot.Config.get( 'oauth' )
+
+        token_str = secrets.token_hex( token_config[ 'token_hex_length' ] )
+        now = datetime.now( timezone.utc )
+        expires_delta = timedelta( days = token_config[ 'expires_days' ] )
+        expires = now + expires_delta
+        member = Member.get_by_username( username, session )
+
+        token = Doorbot.SQLAlchemy.OauthToken(
+            name = name,
+            token = token_str,
+            expiration_date = expires,
+            member = member
+        )
+
+        session.add( token )
+        session.commit()
+        session.close()
+
+        return render_tmpl(
+            'create_oauth_submit',
+            page_name = "Create OAuth Token",
+            msg = "Added token",
+            token = token_str,
+            token_name = name,
+            token_expires = expires.isoformat(),
+        )
 
