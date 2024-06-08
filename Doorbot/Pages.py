@@ -198,222 +198,222 @@ def add_tag():
             msg = "Added tag",
         )
 
-def device_list_main(**args): # List of Device Groups and Devices
+def controller_list_main(**args): # List of Controller Groups and Controllers
     session = get_session()
     groups = session.query(Role)
     formatted_groups = list(map(lambda z: {
-        "device_group": z.name,
-        "devices": ', '.join(list(map(lambda x: x.name, z.permissions))),
+        "controller_group": z.name,
+        "controllers": ', '.join(list(map(lambda x: x.name, z.permissions))),
         "user_count": len(z.members) if len(z.members) != 0 else None,
     }, groups ))
     session.close()
 
     username = flask.session.get( 'username' )
     return render_tmpl(
-        'view_devices',
-        page_name = "Device List",
+        'view_controllers',
+        page_name = "Controller List",
         username = username,
-        device_groups = formatted_groups,
+        controller_groups = formatted_groups,
         **args
     )
 
-@app.route( "/device-list", methods = [ "GET" ] )
+@app.route( "/controller-list", methods = [ "GET" ] )
 @require_logged_in
-def device_list():
-    return device_list_main()
+def controller_list():
+    return controller_list_main()
 
 
-@app.route( "/device-group-add", methods = [ "POST" ] ) # Add a device group
+@app.route( "/controller-group-add", methods = [ "POST" ] ) # Add a controller group
 @require_logged_in
-def device_group_add():
-    add_device_group = flask.request.form[ 'add_device_group' ]
+def controller_group_add():
+    add_controller_group = flask.request.form[ 'add_controller_group' ]
 
     session = get_session()
 
     errors = []
-    if not Doorbot.API.MATCH_NAME.match( add_device_group ):
-        errors.append( "New Device Group must be a string" )
-    if len(add_device_group) < 4:
-        errors.append( "New Device Group name is too short" )
+    if not Doorbot.API.MATCH_NAME.match( add_controller_group ):
+        errors.append( "New Controller Group must be a string" )
+    if len(add_controller_group) < 4:
+        errors.append( "New Controller Group name is too short" )
     if not errors:
-        z = session.query(Role).filter_by(name=add_device_group).one_or_none()
+        z = session.query(Role).filter_by(name=add_controller_group).one_or_none()
         if z is not None:
             errors.append(
-                'New Device Group "' + add_device_group + '" already exists')
+                'New Controller Group "' + add_controller_group + '" already exists')
 
     if errors:
         session.close()
-        return device_list_main(
+        return controller_list_main(
             has_errors = True,
             errors = errors,
             status = 400,
         )
     else:
-        session.add( Role(name = add_device_group) )
+        session.add( Role(name = add_controller_group) )
         session.commit()
         session.close()
-        return device_list_main(
+        return controller_list_main(
             has_errors = True,
-            errors = [ 'New Device Group "' + add_device_group + '" added' ],
+            errors = [ 'New Controller Group "' + add_controller_group + '" added' ],
             status = 201,
         )
 
-@app.route( "/device-group-delete", methods = [ "POST" ] )
+@app.route( "/controller-group-delete", methods = [ "POST" ] )
 @require_logged_in
-def device_group_delete():
-    del_device_group = flask.request.form[ 'del_device_group' ]
+def controller_group_delete():
+    del_controller_group = flask.request.form[ 'del_controller_group' ]
 
     session = get_session()
 
-    ddg = session.query(Role).filter_by(name=del_device_group).one_or_none()
+    ddg = session.query(Role).filter_by(name=del_controller_group).one_or_none()
     if ddg is None:
         session.close()
-        return device_list_main(
+        return controller_list_main(
             has_errors = True,
-            errors = [ 'Cannot delete "' + del_device_group + '", not found' ],
+            errors = [ 'Cannot delete "' + del_controller_group + '", not found' ],
             status = 400,
         )
     else:
         session.delete(ddg)
         session.commit()
         session.close()
-        return device_list_main(
+        return controller_list_main(
             has_errors = True,
-            errors = [ 'Device Group "' + del_device_group + '" deleted' ],
+            errors = [ 'Controller Group "' + del_controller_group + '" deleted' ],
             status = 200,
         )
 
-def edit_devices_main(**args): # List of Devices with add & delete actions
+def edit_controllers_main(**args): # List of Controllers with add & delete actions
     username = flask.session.get( 'username' )
 
-    if 'device_group' in args:
-        device_group = args[ 'device_group' ]
-        del(args[ 'device_group' ])
+    if 'controller_group' in args:
+        controller_group = args[ 'controller_group' ]
+        del(args[ 'controller_group' ])
     else:
-        device_group = flask.request.args.get( 'device_group' )
+        controller_group = flask.request.args.get( 'controller_group' )
 
     session = get_session()
-    devices = session.query(Permission).join(
-        Role, Permission.roles).where((Role.name==device_group))
-    formatted_devices = list(map(lambda z: {
-        "device_name": z.name
-    }, devices ))
+    controllers = session.query(Permission).join(
+        Role, Permission.roles).where((Role.name==controller_group))
+    formatted_controllers = list(map(lambda z: {
+        "controller_name": z.name
+    }, controllers ))
     session.close()
 
     return render_tmpl(
-        'edit_devices',
-        page_name = '' + device_group + ' devices',
+        'edit_controllers',
+        page_name = '' + controller_group + ' controllers',
         username = username,
-        devices = formatted_devices,
-        device_group = device_group,
+        controllers = formatted_controllers,
+        controller_group = controller_group,
         **args
     )
 
-@app.route( "/edit-devices", methods = [ "GET" ] )
+@app.route( "/edit-controllers", methods = [ "GET" ] )
 @require_logged_in
-def edit_devices():
-    return edit_devices_main()
+def edit_controllers():
+    return edit_controllers_main()
 
 
-@app.route( "/device-add", methods = [ "POST" ] ) # Add a device
+@app.route( "/controller-add", methods = [ "POST" ] ) # Add a controller
 @require_logged_in
-def device_add():
+def controller_add():
     request = flask.request
-    add_device = request.form[ 'add_device' ]
-    device_group = request.form[ 'device_group' ]
+    add_controller = request.form[ 'add_controller' ]
+    controller_group = request.form[ 'controller_group' ]
 
     session = get_session()
-    device_group_obj = session.query(Role).filter_by(name=device_group).one_or_none()
+    controller_group_obj = session.query(Role).filter_by(name=controller_group).one_or_none()
 
     errors = []
-    if device_group_obj is None:
-        errors.append('Device Group "' + device_group + '" must first exist')
-    if not Doorbot.API.MATCH_NAME.match( add_device ):
-        errors.append( "New Device must be a string" )
-    if len(add_device) < 4:
-        errors.append( "New Device name is too short" )
+    if controller_group_obj is None:
+        errors.append('Controller Group "' + controller_group + '" must first exist')
+    if not Doorbot.API.MATCH_NAME.match( add_controller ):
+        errors.append( "New Controller must be a string" )
+    if len(add_controller) < 4:
+        errors.append( "New Controller name is too short" )
     if not errors:
-        device_obj = session.query(Permission).filter_by(name=add_device).one_or_none()
-        if device_obj is not None:
-            errors.append('New Device "' + add_device + '" already exists')
+        controller_obj = session.query(Permission).filter_by(name=add_controller).one_or_none()
+        if controller_obj is not None:
+            errors.append('New Controller "' + add_controller + '" already exists')
 
     if errors:
         session.close()
-        return edit_devices_main(
+        return edit_controllers_main(
             has_errors = True,
             errors = errors,
-            device_group = device_group,
+            controller_group = controller_group,
             status = 400,
         )
     else:
-        device_obj = Permission(name=add_device)
-        device_group_obj.permissions.append( device_obj )
-        session.add_all([ device_group_obj, device_obj ])
+        controller_obj = Permission(name=add_controller)
+        controller_group_obj.permissions.append( controller_obj )
+        session.add_all([ controller_group_obj, controller_obj ])
         session.commit()
         session.close()
-        return edit_devices_main(
+        return edit_controllers_main(
             has_errors = True,
-            errors = [ 'New Device "' + add_device + '" added' ],
-            device_group = device_group,
+            errors = [ 'New Controller "' + add_controller + '" added' ],
+            controller_group = controller_group,
             status = 201,
         )
 
-@app.route( "/device-delete", methods = [ "POST" ] ) # Delete a device
+@app.route( "/controller-delete", methods = [ "POST" ] ) # Delete a controller
 @require_logged_in
-def device_delete():
+def controller_delete():
     request = flask.request
-    del_device = request.form[ 'del_device' ]
-    device_group = request.form[ 'device_group' ]
+    del_controller = request.form[ 'del_controller' ]
+    controller_group = request.form[ 'controller_group' ]
 
     session = get_session()
-    device_group_obj = session.query(Role).filter_by(name=device_group).one_or_none()
+    controller_group_obj = session.query(Role).filter_by(name=controller_group).one_or_none()
 
     errors = []
-    if device_group_obj is None:
-        errors.append('Device Group "' + device_group + '" must first exist')
-    dev = session.query(Permission).filter_by(name=del_device).one_or_none()
+    if controller_group_obj is None:
+        errors.append('Controller Group "' + controller_group + '" must first exist')
+    dev = session.query(Permission).filter_by(name=del_controller).one_or_none()
     if dev is None:
-        errors.append('Cannot delete "' + del_device + '", not found')
+        errors.append('Cannot delete "' + del_controller + '", not found')
     if errors:
         session.close()
-        return edit_devices_main(
+        return edit_controllers_main(
             has_errors = True,
             errors = errors,
-            device_group = device_group,
+            controller_group = controller_group,
             status = 400,
         )
     else:
         session.delete(dev)
         session.commit()
         session.close()
-        return edit_devices_main(
+        return edit_controllers_main(
             has_errors = True,
-            errors = [ 'Device "' + del_device + '" deleted' ],
-            device_group = device_group,
+            errors = [ 'Controller "' + del_controller + '" deleted' ],
+            controller_group = controller_group,
             status = 200,
         )
 
-def edit_group_users_main(**args): # List of Device Group Users with add & delete actions
+def edit_group_users_main(**args): # List of Controller Group Users with add & delete actions
     username = flask.session.get( 'username' )
 
-    if 'device_group' in args:
-        device_group = args[ 'device_group' ]
-        del(args[ 'device_group' ])
+    if 'controller_group' in args:
+        controller_group = args[ 'controller_group' ]
+        del(args[ 'controller_group' ])
     else:
-        device_group = flask.request.args.get( 'device_group' )
+        controller_group = flask.request.args.get( 'controller_group' )
 
     session = get_session()
-    users = session.query(Role).filter_by(name=device_group).one_or_none().members
+    users = session.query(Role).filter_by(name=controller_group).one_or_none().members
     formatted_users = list(map(lambda z: {
         "group_user_name": z.full_name
     }, users ))
 
     return render_tmpl(
         'edit_group_users',
-        page_name = '' + device_group + ' users',
+        page_name = '' + controller_group + ' users',
         username = username,
         users = formatted_users,
-        device_group = device_group,
+        controller_group = controller_group,
         **args
     )
 
@@ -423,19 +423,19 @@ def edit_group_users():
     return edit_group_users_main()
 
 
-@app.route( "/group-user-add", methods = [ "POST" ] ) # Add a user to a device group
+@app.route( "/group-user-add", methods = [ "POST" ] ) # Add a user to a controller group
 @require_logged_in
 def group_users_add():
     request = flask.request
     add_group_user = request.form[ 'add_group_user' ]
-    device_group = request.form[ 'device_group' ]
+    controller_group = request.form[ 'controller_group' ]
 
     session = get_session()
-    device_group_obj = session.query(Role).filter_by(name=device_group).one_or_none()
+    controller_group_obj = session.query(Role).filter_by(name=controller_group).one_or_none()
 
     errors = []
-    if device_group_obj is None:
-        errors.append('Device Group "' + device_group + '" must first exist')
+    if controller_group_obj is None:
+        errors.append('Controller Group "' + controller_group + '" must first exist')
     if not Doorbot.API.MATCH_NAME.match( add_group_user ):
         errors.append( "New user name must be a string" )
     if len(add_group_user) < 4:
@@ -444,43 +444,43 @@ def group_users_add():
         group_users_obj = session.query(Member).filter_by(full_name=add_group_user).first()
         if group_users_obj is None:
             errors.append('New user name "' + add_group_user + '" not found in database')
-    if not errors and device_group_obj in group_users_obj.roles:
+    if not errors and controller_group_obj in group_users_obj.roles:
         errors.append('New user name "' + add_group_user +
-            '" already exists in "' + device_group + ' "')
+            '" already exists in "' + controller_group + ' "')
 
     if errors:
         session.close()
         return edit_group_users_main(
             has_errors = True,
             errors = errors,
-            device_group = device_group,
+            controller_group = controller_group,
             status = 400,
         )
     else:
-        group_users_obj.roles.append( device_group_obj )
-        session.add_all([ device_group_obj, group_users_obj ])
+        group_users_obj.roles.append( controller_group_obj )
+        session.add_all([ controller_group_obj, group_users_obj ])
         session.commit()
         session.close()
         return edit_group_users_main(
             has_errors = True,
             errors = [ 'New User "' + add_group_user + '" added' ],
-            device_group = device_group,
+            controller_group = controller_group,
             status = 200,
         )
 
-@app.route( "/group-user-delete", methods = [ "POST" ] ) # Delete a user from a device group
+@app.route( "/group-user-delete", methods = [ "POST" ] ) # Delete a user from a controller group
 @require_logged_in
 def group_users_delete():
     request = flask.request
     del_group_user = request.form[ 'del_group_user' ]
-    device_group = request.form[ 'device_group' ]
+    controller_group = request.form[ 'controller_group' ]
 
     session = get_session()
-    device_group_obj = session.query(Role).filter_by(name=device_group).one_or_none()
+    controller_group_obj = session.query(Role).filter_by(name=controller_group).one_or_none()
 
     errors = []
-    if device_group_obj is None:
-        errors.append('Device Group "' + device_group + '" must first exist')
+    if controller_group_obj is None:
+        errors.append('Controller Group "' + controller_group + '" must first exist')
     usr = session.query(Member).filter_by(full_name=del_group_user).one_or_none()
     if usr is None:
         errors.append('Cannot delete "' + del_group_user + '", not found')
@@ -489,18 +489,18 @@ def group_users_delete():
         return edit_group_users_main(
             has_errors = True,
             errors = errors,
-            device_group = device_group,
+            controller_group = controller_group,
             status = 400,
         )
     else:
-        usr.roles.remove( device_group_obj )
-        session.add_all([ usr, device_group_obj ])
+        usr.roles.remove( controller_group_obj )
+        session.add_all([ usr, controller_group_obj ])
         session.commit()
         session.close()
         return edit_group_users_main(
             has_errors = True,
             errors = [ 'User "' + del_group_user + '" deleted' ],
-            device_group = device_group,
+            controller_group = controller_group,
             status = 200,
         )
 
