@@ -3,8 +3,8 @@
 {{> top_nav }}
 
 <form action="/group-user-add" method="POST">
-<p>New {{device_group}} user : <input type="text" id="add_group_user" name="add_group_user">
-    <input type="hidden" name="device_group" value="{{device_group}}">
+<p>New {{controller_group}} user : <input type="text" id="add_group_user" name="add_group_user">
+    <input type="hidden" name="controller_group" value="{{controller_group}}">
     <input type="submit" value="Add"></p>
 </form>
 
@@ -22,7 +22,7 @@
         <td> {{group_user_name}} </td>
         <td> 
             <form action="/group-user-delete" method="POST">
-                <input type="hidden" name="device_group" value="{{device_group}}">
+                <input type="hidden" name="controller_group" value="{{controller_group}}">
                 <input type="hidden" name="del_group_user" value="{{group_user_name}}">
                 <input type="submit" value="Delete User">
             </form>
