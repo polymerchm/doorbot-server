@@ -12,6 +12,7 @@ from Doorbot.SQLAlchemy import get_session
 from datetime import datetime
 from flask_httpauth import HTTPBasicAuth
 from sqlalchemy import select
+from sqlalchemy import delete
 from sqlalchemy.sql import text
 
 MATCH_INT = re.compile( ''.join([
@@ -688,6 +689,130 @@ def delete_role_from_member( role, tag ):
         session.close()
 
     return response
+
+@app.route( "/v1/dump_locations", methods = [ "GET" ] )
+@auth_required
+def dump_locations():
+  
+    session = get_session()
+    stmt = select( Location )
+    
+    locations = session.scalars( stmt ).all()
+    session.close()
+
+    out = [location.name for location in locations]
+    return out
+
+@app.route( "/v1/new_location/<newLocation>/<hostname>", methods = [ "PUT" ] )
+@auth_required
+def new_location(newLocation, hostname):
+    response = flask.make_response()
+    if not MATCH_NAME.match( newLocation ):
+        response.status = 400
+        return response
+    
+    session = get_session()
+    stmt = select( Location ).where(
+        Location.name == newLocation
+    )
+    location_db = session.scalars( stmt ).one_or_none()
+
+    if not location_db is None:
+        session.close()
+        set_error(
+            response = response,
+            msg = "Location " + newLocation + " already exists",
+            status = 404,
+        )
+        return response
+
+    location = Location(
+        name = newLocation,
+        hostname = hostname,
+    )
+    session.add( location )
+    session.commit()
+    session.close()
+
+    response.status = 201
+    return response
+
+@app.route("/v1/edit_location/<location>/<newHostname>", methods = [  "POST" ])
+@auth_required
+def edit_location(location, newHostname):
+    response = flask.make_response()
+    if not MATCH_NAME.match( location ) or (not MATCH_NAME.match( newHostname )):
+        response.status = 400
+        return response
+    
+    stmt = select( Location ).where (
+        Location.c.name == location
+        )
+    session = get_session()
+    
+    location_db = session.scalars( stmt ).one_or_none()
+    
+    if location_db == None:
+        session.close()
+        set_error(
+            response = response,
+            msg = "Location " + location + " not found",
+            status = 404,
+        )
+        return response
+    
+    location_db.hostname = newHostname
+    session.add( location_db )
+    session.commit()
+    session.close()
+
+    response.status = 201
+    return response
+
+@app.route("/v1/delete_location/<location>", methods = [ 'DELETE '])
+@auth_required
+def delete_location(location):
+    if not MATCH_NAME.match( location ):
+        response.status = 400
+        return response
+    
+    session = get_session()
+    location_obj = get( session, Location, name = location )
+    
+    response = flask.make_response()
+    if not location_obj:
+        session.close()
+        set_error(
+            response = response,
+            msg = "Location " + location + " was not found",
+            status = 404,
+        )
+    else:
+        response.status = 200
+
+    stmt  = delete( Location ).where( Location.name == location)
+    session.execute(stmt)
+    session.commit()
+    session.close()
+  
+    response.status = 204
+  
+    return response
+    
+    
+        
+    
+        
+        
+    
+    
+    
+    
+        
+    
+    
+    
+    
 
 
 # TODO /secure/change_passwd
