@@ -1,9 +1,11 @@
 #!/usr/bin/python3
 import requests
 import json
+import sys
+from Doorbot.SQLAlchemy import Member
+from Doorbot.SQLAlchemy import get_session
 import Doorbot.Config
-import Doorbot.DB as DB
-import psycopg2
+from sqlalchemy import select
 
 
 DEFAULT_RFID = "0000000000"
@@ -98,11 +100,12 @@ def is_active_member( member ):
     return True
 
 
-def fetch_members_db( db ):
-    cur = db.cursor()
-    cur.execute( "SELECT rfid, full_name, active, mms_id FROM members" )
-    rows = cur.fetchall()
-    cur.close()
+def fetch_members_db():
+    session = get_session()
+    stmt = select( Member.rfid, Member.full_name, Member.active, Member.mms_id )
+    rows = session.scalars(stmt).all()
+    session.close()
+ 
 
     results = {}
     for member in rows:
@@ -253,13 +256,12 @@ def handle_no_mms_id_in_db_members( members ):
 
 
 
-db = DB.db_connect()
-DB.set_db( db )
+
 
 members = fetch_all_members()
 members_by_rfid, zero_rfid_members = map_members_by_rfid( members )
 
-db_members_by_rfid = fetch_members_db( db )
+db_members_by_rfid = fetch_members_db()
 
 clear_members, wrong_name_members, wrong_active_members, add_to_db_members, add_to_mms_members, no_mms_id_in_db_members = filter_members( db_members_by_rfid, members_by_rfid )
 

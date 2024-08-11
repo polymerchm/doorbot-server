@@ -1,12 +1,9 @@
 import json
-import Doorbot.Config
-import Doorbot.DB as DB
-import psycopg2
 import sys
+from Doorbot.SQLAlchemy import Member
+from Doorbot.SQLAlchemy import get_session
 
-
-db = DB.db_connect()
-DB.set_db( db )
+session = get_session()
 members = json.load( sys.stdin )
 
 
@@ -15,11 +12,9 @@ for member in members:
     display_name = member[ 'name_mms' ]
     rfid = member[ 'rfid' ]
     print( f"Adding {rfid} as '{display_name}', mms_id '{mms_id}'" )
-    try:
-        DB.add_member(
-            display_name,
-            rfid,
-            mms_id,
-        )
-    except err:
-        print( f"Error adding '{display_name}' (mms ID '{mms_id}': {err} )" )
+    entry = Member(full_name = display_name, rfid = rfid, mms_id = mms_id)
+    session.add(entry)
+    
+session.commit()
+session.close()
+
